@@ -183,3 +183,41 @@
 ```
 
 如果不想全局打开，也可以只利用`subword-forward`等移动命令。
+
+## delsel
+
+由[Kermit95](https://emacs-china.org/u/Kermit95)分享。
+
+选中文本后，直接输入就可以，省去了删除操作。这在其他文本编辑器里都是标配，建议打开。
+
+```elisp
+(use-package delsel
+  :ensure nil
+  :hook (after-init . delete-selection-mode))
+```
+
+## parenthesis
+
+高亮显示配对的`( )` `[ ]` `{ }` 括号，比较实用，建议打开。
+
+```elisp
+(use-package paren
+  :ensure nil
+  :hook (after-init . show-paren-mode)
+  :config
+  (setq show-paren-when-point-inside-paren t
+        show-paren-when-point-in-periphery t))
+```
+
+## simple
+
+在`modeline`里显示行号、列号以及当前文件的总字符数。
+
+```elisp
+(use-package simple
+  :ensure nil
+  :hook (after-init . (lambda ()
+                         (line-number-mode)
+                         (column-number-mode)
+                         (size-indication-mode))))
+```
