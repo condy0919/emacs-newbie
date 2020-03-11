@@ -306,6 +306,19 @@
 
 `ivy-occur`扩展性很强，下文会单独开一节描述。
 
+注: 如果是`evil`用户，可能会需要手工将 **normal** 状态变为 **insert** 状态才能使用对应的按键绑定。
+
+```elisp
+(use-package ivy
+  :ensure t
+  :diminish ivy-mode
+  :definines (evil-insert-status-cursor)
+  :hook ((after-init . ivy-mode)
+         (ivy-occur-mode . (lambda ()
+                             (setq-local evil-insert-status-cursor 'box)
+                             (evil-insert-state)))))
+```
+
 #### ivy-occur-dispatch
 
 在`ivy-occur-mode`下，`ivy-occur-dispatch`如同`ivy-dispatching-done`一样，将会读
@@ -315,4 +328,84 @@
 
 ## ivy completion style
 
-to be continued...
+`ivy`总共提供了5种补全方式：
+
+- `ivy--regex`
+- `ivy--regex-plus`
+- `ivy--regex-ignore-order`
+- `ivy--regex-fuzzy`
+- `regexp-quote`
+
+默认配置为
+
+```elisp
+(setq ivy-re-builders-alist
+      '((t . ivy--regex-plus)))
+```
+
+`t`是用来保证每个操作都有一个对应的`re-builder`可以使用。
+
+### ivy--regex-plus
+
+`ivy--regex-plus`是`ivy`的默认补全方式，它是这样工作的：
+
+例如用户搜索的是`"foo bar"`, 它会将`"foo bar"`里的多个连续的空格中的第1个空格转
+换成正则里的通项匹配，即正则表达式`foo.*bar`。如果用户想匹配空格，那么需要额外的
+多输入一个空格。如想匹配`"foo bar"`, 那么用户实际应该输入的是`foo  bar`(注意这里
+要有2个空格).`ivy`会把它转换为`foo .*bar`(注意`foo`后面有个空格)。论坛会压缩空
+格，效果下文见图片。
+
+![ivy--regex-plus](https://emacs-china.org/uploads/default/original/2X/e/e3feb87f5411ea6ab9d3882e188b57159e918216.png)
+
+此外它还支持正则的取非操作，通过`!`来完成。
+
+例如`"foo bar !example"`会先得到匹配`foo.*bar`的结果，然后再将结果里匹配
+`example`的候选项删除。
+
+### ivy--regex
+
+弱化版的`ivy--regex-plus`，不支持取非操作。
+
+### ivy--regex-ignore-order
+
+如名字所示，它会忽略正则的顺序，就好比多次`grep`一样。
+
+- `foo` 会匹配 `foo`
+- `foo bar` 会匹配 `foo bar` `bar foo`
+- `foo !bar` 会匹配 `foo baz` 但是不会 `foo bar` 和 `bar foo`
+- `foo[0-9]` 会匹配 `foo1` `foo2` 等等后面是数字的情况
+
+如果想要匹配`!`号，需要转义一下:
+
+`foo\\!bar` 将会匹配 `foo!bar`
+
+此外，空格也可以转义：
+
+`foo\\ bar` 将会匹配 `foo bar`
+
+### ivy--regex-fuzzy
+
+它会在每个字符后面都插入`.*`, 如 `abc` 对应的正则是 `a.*b.*c.*`。
+
+### regexp-quote
+
+自带的，见[官方文档](https://www.gnu.org/software/emacs/manual/html_node/elisp/Regexp-Functions.html).
+
+## 增加自己的 ivy action
+
+以`counsel-find-file`为例，有如下场景：
+
+如果想要在查找文件的同时，发现有些文件命名不合适，有些文件需要删除还有些文件没有
+权限打开需要使用`root`。最好是在`find-file`里就能实现而不用再去调用`dired`。此时
+可以为`counsel-find-file`添加`action`.
+
+```elisp
+(ivy-set-actions
+  'counsel-find-file
+  '(("d" delete-file "delete")
+    ("r" rename-file "rename"))
+    ("x" counsel-find-file-as-root "open as root"))
+```
+
+![custom-action](https://emacs-china.org/uploads/default/original/2X/2/2b93e615847880b512bf2fc0ee7d56f8d5fc1046.png)
+
