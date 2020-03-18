@@ -221,3 +221,48 @@
                          (column-number-mode)
                          (size-indication-mode))))
 ```
+
+## autorevert
+
+有时候`Emacs`里打开的文件可能被外部修改，启用`autorevert`的话可以自动更新对应的
+`buffer`.
+
+```elisp
+(use-package autorevert
+  :ensure nil
+  :hook (after-init . global-auto-revert-mode))
+```
+
+## isearch
+
+本身`Emacs`自带的`isearch`已经足够强大，稍加修改就可以增加实用性。
+
+例如[`anzu`](https://github.com/emacsorphanage/anzu)的显示匹配个数的功能就已经原
+生支持了。通过
+
+```elisp
+(setq isearch-lazy-count t
+      lazy-count-prefix-format "%s/%s ")
+```
+
+来显示如 `10/100` 这种状态。
+
+比较恼人的一点是，在搜索中删除字符会回退搜索结果，而不是停在当前位置将最后一个搜
+索字符删除。这里可以通过`remap isearch-delete-char`来实现。
+
+此外，还可以将搜索结果保持在高亮状态以方便肉眼识别。这个是通过设置
+`lazy-highlight-cleanup`为`nil`实现的。去除高亮状态需要人工`M-x`调用
+`lazy-highlight-cleanup`。
+
+```elisp
+(use-package isearch
+  :ensure nil
+  :bind (:map isearch-mode-map
+         ([remap isearch-delete-char] . isearch-del-char))
+  :custom
+  (isearch-lazy-count t)
+  (lazy-count-prefix-format "%s/%s ")
+  (lazy-highlight-cleanup nil))
+```
+
+注：`isearch-lazy-count`和`lazy-count-prefix-format`需要`Emacs` 27+
