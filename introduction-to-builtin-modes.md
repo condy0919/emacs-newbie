@@ -266,3 +266,62 @@
 ```
 
 注：`isearch-lazy-count`和`lazy-count-prefix-format`需要`Emacs` 27+
+
+## tempo
+
+[`tempo`](https://www.emacswiki.org/emacs/TempoMode)可以算是`yasnippet`的祖先，
+`skeleton`算是它的爷爷。由于`tempo`里可以使用`elisp`函数，灵活性非常大。
+
+实际上在写代码的时候，想插入一个**LICENSE**头是个比较常用的需求，它也可以通过其
+他方式如`auto-insert`在打开文件时就自动插入。在这里，我们使用`tempo`来实现。
+
+目前比较推荐的方式是采用`SPDX`的格式，而不是直接把`license`内容写入代码文件中。
+采用`SPDX`格式可以有效的减少文件大小，不会喧宾夺主占用大量代码行数。
+
+一个典型的`license`头是这样:
+
+```cpp
+// Copyright 2017 - 2018 ccls Authors
+// SPDX-License-Identifier: Apache-2.0
+```
+
+所以我们可以仿照着这个格式来写一个`tempo`的`template`.
+
+```elisp
+;; 完整的列表非常长，可以访问 https://spdx.org/licenses/ 获得
+(defconst license-spdx-identifiers
+  '(Apache-1.0 Apache-2.0 MIT))
+
+(tempo-define-template "license"
+  '(comment-start
+    (format "Copyright %s - present %s Authors"
+            (format-time-string "%Y")
+            (if (featurep 'projectile)
+                (progn
+                  (require 'projectile)
+                  (projectile-project-name))
+              "Unknown"))
+    comment-end > n>
+    comment-start
+    "SPDX-License-Identifier: " (completing-read "License: "
+                                                 license-spdx-identifiers)
+    comment-end > n>)
+  'license
+  "Insert a SPDX license.")
+```
+
+`tempo`内的`>`表示的是缩进，`n`表示的是插入一个换行，其他的部分就是一个普通的
+`elisp`函数了。
+
+这样定义了这个`template`之类，会生成一个叫`tempo-template-license`的函数。因此我
+们可以直接调用它来插入`license`头部。
+
+此外还可以结合`abbrev-mode`来自动替换，如果想在`elisp-mode`下直接替代，可以通过
+`define-abbrev`来实现：
+
+```elisp
+(define-abbrev emacs-lisp-mode-abbrev-table ";license" "" 'tempo-template-license)
+```
+
+这里只需要在`elisp-mode`下开启`abbrev-mode`，然后输入`;license `就会实现自动替换
+（注意，最后要有一个空格）。
