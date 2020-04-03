@@ -325,3 +325,22 @@
 
 这里只需要在`elisp-mode`下开启`abbrev-mode`，然后输入`;license `就会实现自动替换
 （注意，最后要有一个空格）。
+
+## align
+
+听说有些写`java`的朋友特别喜欢将变量的`=`对齐，即原来的代码是这样的:
+
+```java
+private int magicNumber = 0xdeadbeef;
+private double PI = 3.14159265358939723846264;
+```
+
+选中它们，然后调用`align-regexp`，给定`=`作为它的参数，就会将上述代码的`=`部分对
+齐了。
+
+```java
+private int magicNumber = 0xdeadbeef;
+private double PI       = 3.14159265358939723846264;
+```
+
+其他`align`相关的函数功能还有待开发。
