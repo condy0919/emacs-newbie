@@ -344,3 +344,64 @@ private double PI       = 3.14159265358939723846264;
 ```
 
 其他`align`相关的函数功能还有待开发。
+
+## make isearch behave more like searching in browser
+
+在浏览器里，我们只需要按`C-f`，然后敲入所要搜索的字符串。之后只要按回车就可以不
+断地向下搜索。如果我们需要向上搜索，那么需要点击一下向上的箭头。
+
+现在我们在`isearch`里模拟这种情况，还是使用`C-s`来调用`isearch`。但是之后的
+`repeat`操作是交给了回车。
+
+首先，我们先定义一下变量来保存当前搜索的方向。
+
+```elisp
+(defvar my/isearch--direction nil)
+```
+
+然后使得`isearch-mode-map`下的`C-s`可以告诉我们当前是在向下搜索；同理，使得
+`isearch-mode-map`下的`C-r`告诉我们是在向上搜索。
+
+```elisp
+(define-advice isearch-repeat-forward (:after (_))
+  (setq-local my/isearch--direction 'forward))
+(define-advice isearch-repeat-backward (:after (_))
+  (setq-local my/isearch--direction 'backward))
+```
+
+这里偷懒，采用了`advise`的方式。如果不想侵入，可以自己在上层包装一下对应的命令。
+
+然后在`isearch-mode-map`下的回车操作就是根据`my/isearch--direction`来搜索了。就
+是如此简单。
+
+```elisp
+(defun my/isearch-repeat (&optional arg)
+  (interactive "P")
+  (isearch-repeat my/isearch--direction arg))
+```
+
+当然在按`Esc`键的时候表明搜索已经结束了，此时应该重置当前的方式:
+
+```elisp
+(define-advice isearch-exit (:after nil)
+  (setq-local my/isearch--direction nil))
+```
+
+完整代码见下方:
+
+```elisp
+(use-package isearch
+  :ensure nil
+  :bind (:map isearch-mode-map
+         ([return] . my/isearch-repeat)
+         ([escape] . isearch-exit))
+  :config
+  (defvar my/isearch--direction nil)
+  (define-advice isearch-exit (:after nil)
+    (setq-local my/isearch--direction nil))
+  (define-advice isearch-repeat-forward (:after (_))
+    (setq-local my/isearch--direction 'forward))
+  (define-advice isearch-repeat-backward (:after (_))
+    (setq-local my/isearch--direction 'backward))
+  )
+```
