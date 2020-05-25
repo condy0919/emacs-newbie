@@ -405,3 +405,100 @@ private double PI       = 3.14159265358939723846264;
     (setq-local my/isearch--direction 'backward))
   )
 ```
+
+## dired
+
+`dired`是一个用于`directory`浏览的`mode`，功能非常丰富。因此这里介绍的东西肯定不
+能完全覆盖，会慢慢完善之。
+
+### 在 dired 中用外部程序打开对应文件
+
+在`dired-mode-map`中，也是可以执行`shell`命令的。与之相关的命令有
+
+- `dired-do-shell-command`, 默认绑定在<kbd>!</kbd>
+- `dired-smart-shell-command`，默认绑定在<kbd>M-!</kbd>
+- `async-shell-command`，默认绑定在<kbd>M-&</kbd>
+
+其中，通过配置`dired-guess-shell-alist-user`可以令`dired-do-shell-command`有一个
+比较好的默认命令。例如，我这是样配置的:
+
+``` elisp
+(setq dired-guess-shell-alist-user `((,(rx "."
+                                           (or
+                                            ;; Videos
+                                            "mp4" "avi" "mkv" "flv" "ogv" "mov"
+                                            ;; Music
+                                            "wav" "mp3" "flac"
+                                            ;; Images
+                                            "jpg" "jpeg" "png" "gif" "xpm" "svg" "bmp"
+                                            ;; Docs
+                                            "pdf" "md" "djvu" "ps" "eps")
+                                           string-end)
+                                      ,(cond ((eq system-type 'gnu/linux) "xdg-open")
+                                             ((eq system-type 'darwin) "open")
+                                             ((eq system-type 'windows-nt) "start")
+                                             (t "")))))
+```
+
+这里考虑了多个平台下的差异。如`linux`平台下会使用`xdg-open`来打开对应的这些文件
+(通过`mimeinfo`来配置，见`~/.config/mimeapps.list`)。但是它有一个缺点，会阻塞当
+前的`Emacs`进程，所以仅适用于临时查看的需求。
+
+`dired-smart-shell-command`与`dired-do-shell-command`类似，也会阻塞当前`Emacs`进
+程。
+
+`async-shell-command`则不会阻塞当前`Emacs`，唯一的缺点可能是会多弹出个`buffer`吧。
+如果对`async-shell-command`的结果不是很感兴趣，可能通过`shackle`等类似的工具把忽
+略对应的`buffer`。
+
+如果使用的是`Emacs` **28**的话，并且已经设置了
+
+``` elisp
+(setq browse-url-handlers '(("\\`file:" . browse-url-default-browser)))
+```
+
+可以直接在`dired`里按`W` (`browse-url-of-dired-file`), 这会直接用外部程序打开。
+当然，它不会阻塞`Emacs`。
+
+### 隐藏、显示 以`.`开头的文件
+
+`dired`显示文件时使用的`ls`命令参数是由`dired-listing-switches`来控制的，它的默
+认值是`-al`。如果不想要显示以`.`开头的文件，那么通过<kbd>C-u s</kbd> (`s`为
+`dired-sort-toggle-or-edit`)来重新设置`dired-listing-switches`。
+
+如果只是想简单地隐藏当前目录下以`.`开头的文件，那么可以通过将满足`^\\.`正则的行
+删除就行（真实文件并没有删除，只是删除它的显示）。注意到`dired-do-print`命令基本
+不怎么使用，于是可以利用`advice`来覆盖它，实现我们自己的`dotfiles-toggle`。
+
+``` elisp
+;; 修改自 https://www.emacswiki.org/emacs/DiredOmitMode
+(define-advice dired-do-print (:override (&optional _))
+    "Show/hide dotfiles."
+    (interactive)
+    (if (or (not (boundp 'dired-dotfiles-show-p)) dired-dotfiles-show-p)
+        (progn
+          (setq-local dired-dotfiles-show-p nil)
+          (dired-mark-files-regexp "^\\.")
+          (dired-do-kill-lines))
+      (revert-buffer)
+      (setq-local dired-dotfiles-show-p t)))
+```
+
+这样只要按一下<kbd>P</kbd>就可以达到隐藏、显示的切换了。
+
+如果不想自己写`elisp`，这里也有一个现成的包 https://github.com/mattiasb/dired-hide-dotfiles
+
+## ispell
+
+`ispell`全称是`interactive` `spell`检查器，它支持`ispell`, `aspell`和`hunspell`，
+以下以`hunspell`为例。
+
+``` elisp
+;; 这里使用的是 en_US 字典，需要使用包管理安装对应的字典，类似的名字可能 hunspell-en_US
+(setq ispell-dictionary "en_US"
+      ispell-program-name "hunspell"
+      ispell-personal-dictionary (expand-file-name "hunspell_dict.txt" user-emacs-directory))
+```
+
+这样就可以通过调用`ispell-word`来看一个单词是否正确了。如果是`evil`用户，这个函
+数已经被绑定至<kbd>z=</kbd>上了。 \w/
