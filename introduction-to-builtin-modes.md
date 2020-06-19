@@ -65,17 +65,20 @@
 (use-package hideshow
   :ensure nil
   :diminish hs-minor-mode
-  :bind (:map prog-mode-map
-         ("C-c TAB" . hs-toggle-hiding)
-         ("M-+" . hs-show-all))
-  :hook (prog-mode . hs-minor-mode)
-  :custom
-  (hs-special-modes-alist
-   (mapcar 'purecopy
-           '((c-mode "{" "}" "/[*/]" nil nil)
-             (c++-mode "{" "}" "/[*/]" nil nil)
-             (rust-mode "{" "}" "/[*/]" nil nil)))))
+  :hook (prog-mode . hs-minor-mode))
 ```
+
+`hideshow`的默认按键前缀为<kbd>C-c @</kbd>，这里放一个默认的按键与经过
+`evil-mode`的版本的对比表格:
+
+| 功能               | 原生                   | `evil-mode`   |
+|--------------------|------------------------|---------------|
+| `hs-hide-block`    | <kbd>C-c @ C-h</kbd>   | <kbd>zc</kbd> |
+| `hs-show-block`    | <kbd>C-c @ C-s</kbd>   | <kbd>zo</kbd> |
+| `hs-hide-all`      | <kbd>C-c @ C-M-h</kbd> | <kbd>zm</kbd> |
+| `hs-show-all`      | <kbd>C-c @ C-M-s</kbd> | <kbd>zr</kbd> |
+| `hs-hide-level`    | <kbd>C-c @ C-l</kbd>   | 无            |
+| `hs-toggle-hiding` | <kbd>C-c @ C-c</kbd>   | <kbd>za</kbd> |
 
 一些类似`hideshow`的插件
 
@@ -84,6 +87,29 @@
 - [yafolding.el](https://github.com/zenozeng/yafolding.el)
 
 其中`origami`有`lsp`支持[lsp-origami](https://github.com/emacs-lsp/lsp-origami)
+
+### hideshow 扩展: 显示被折叠的代码行数
+
+默认情况下`hideshow`对于显示的代码是以`...` `overlay`的形式显示的，而且
+`hideshow`给予了自定义的能力，通过设置`hs-set-up-overlay`变量即可。
+
+``` elisp
+;; 这里额外启用了 :box t 属性使得提示更加明显
+(defconst hideshow-folded-face '((t (:inherit 'font-lock-comment-face :box t))))
+
+(defun hideshow-folded-overlay-fn (ov)
+    (when (eq 'code (overlay-get ov 'hs))
+      (let* ((nlines (count-lines (overlay-start ov) (overlay-end ov)))
+             (info (format " ... #%d " nlines)))
+        (overlay-put ov 'display (propertize info 'face hideshow-folded-face)))))
+
+(setq hs-set-up-overlay 'hideshow-folded-overlay-fn)
+```
+
+附效果图:
+
+![before-fold](https://emacs-china.org/uploads/default/original/2X/c/c204b95093febf0f2455b17e1c98c3c5d7858a13.png)
+![after-fold](https://emacs-china.org/uploads/default/original/2X/a/a88653d0d1f48d0e23d1814e46ba998390fc61da.png)
 
 ## whitespace
 
