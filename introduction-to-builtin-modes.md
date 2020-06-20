@@ -306,14 +306,14 @@
 
 一个典型的`license`头是这样:
 
-```cpp
+``` cpp
 // Copyright 2017 - 2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 ```
 
 所以我们可以仿照着这个格式来写一个`tempo`的`template`.
 
-```elisp
+``` elisp
 ;; 完整的列表非常长，可以访问 https://spdx.org/licenses/ 获得
 (defconst license-spdx-identifiers
   '(Apache-1.0 Apache-2.0 MIT))
@@ -528,3 +528,89 @@ private double PI       = 3.14159265358939723846264;
 
 这样就可以通过调用`ispell-word`来看一个单词是否正确了。如果是`evil`用户，这个函
 数已经被绑定至<kbd>z=</kbd>上了。 \w/
+
+## Calendar
+
+`Emacs`里日历可以拿来干什么呢？
+
+第一个作用自然是看日期的，最起码得让今天醒目得吧？于是选择了在
+`calendar-today-visible-hook`上加上`calendar-mark-today`。默认今天的日期是有下划
+线的，如果不喜欢也可以自己修改`calendar-today-marker`。
+
+第二个作用自然是看节日的，为了更加更本地化一点，可以设置一些自己想关注的节日。我
+是这样设置的:
+
+把较本土的节日放在了`holiday-local-holidays`里,
+
+``` elisp
+;; 分别是妇女节、植树节、劳动节、青年节、儿童节、教师节、国庆节、程序员节、双11
+(setq holiday-local-holidays `((holiday-fixed 3 8  "Women's Day")
+                               (holiday-fixed 3 12 "Arbor Day")
+                               ,@(cl-loop for i from 1 to 3
+                                          collect `(holiday-fixed 5 ,i "International Workers' Day"))
+                               (holiday-fixed 5 4  "Chinese Youth Day")
+                               (holiday-fixed 6 1  "Children's Day")
+                               (holiday-fixed 9 10 "Teachers' Day")
+                               ,@(cl-loop for i from 1 to 7
+                                          collect `(holiday-fixed 10 ,i "National Day"))
+                               (holiday-fixed 10 24 "Programmers' Day")
+                               (holiday-fixed 11 11 "Singles' Day")))
+```
+
+再把其他没在默认日历里的放进`holiday-other-holidays`里,
+
+``` elisp
+;; 分别是世界地球日、世界读书日、俄罗斯的那个程序员节
+(setq holiday-other-holidays '((holiday-fixed 4 22 "Earth Day")
+                               (holiday-fixed 4 23 "World Book Day")
+                               (holiday-sexp '(if (or (zerop (% year 400))
+                                                      (and (% year 100) (zerop (% year 4))))
+                                                  (list 9 12 year)
+                                                (list 9 13 year))
+                                             "World Programmers' Day")))
+```
+
+然后再开启`calendar`内置的中国节日支持:
+
+``` elisp
+(setq calendar-chinese-all-holidays-flag t)
+```
+
+这样就可以获得一个不错的日历体验了。如果自己还有农历节日需求的话，可以使用
+`holiday-chinese`来定义。如
+
+``` elisp
+;; 元宵节
+(setq holiday-oriental-holidays '((holiday-chinese 1 15 "Lantern Festival")))
+```
+
+当然元宵节已经默认被定义了，只需开启`calendar-chinese-all-holidays-flag`。
+
+如果这还不够，还有[cal-china-x](https://github.com/xwl/cal-china-x)。
+
+第三个功能也可以在`calendar`界面添加日记，默认的日记从功能上来说自然是不如
+`org-mode`加持的丰富。请确保`org-agenda-diary-file`的值不是`'diary-file`，然后在
+`calendar-mode-map`下调用`org-agenda-diary-entry`即可选择插入日记。
+
+附图:
+
+![org-agenda-add-entry-to-org-agenda-diary-file](https://emacs-china.org/uploads/default/original/2X/a/a2dbd0a45689694308f31218030d6f95cecb7d93.png)
+
+![org-agenda-diary-file](https://emacs-china.org/uploads/default/original/2X/d/d8fd2964e8999f56e88c55b07043c804d02be37d.png)
+
+需要注意，它默认不会自动保存`org-agenda-diary-file`。如果不喜欢这一点，可以利用
+`advice`来修正一下。
+
+``` elisp
+(defun org-agenda-add-entry-with-save (_type text &optional _d1 _d2)
+  ;; `org-agenda-add-entry-to-org-agenda-diary-file'里认为如果用户没有输入有效的
+  ;; 内容，会弹出对应 buffer 让用户人工输入。
+  (when (string-match "\\S-" text)
+    (with-current-buffer (find-file-noselect org-agenda-diary-file)
+      (save-buffer))))
+
+(advice-add #'org-agenda-add-entry-to-org-agenda-diary-file :after #'org-agenda-add-entry-with-save)
+```
+
+我觉得这样子设置之后，可以轻度取代
+[org-journal](https://github.com/bastibe/org-journal)了?
