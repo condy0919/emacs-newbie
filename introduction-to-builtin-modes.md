@@ -229,6 +229,16 @@
 `this_is_a_symbol`被认为是一个单词。 <kbd>M-f</kbd> (`forward-word`) 可以直接跳
 过。
 
+## follow-mode
+
+如果你的屏幕很宽，但是实际显示的条目的宽度无法利用这宽屏幕，那么`follow-mode`可
+以帮助你。一个典型的使用案例是，再打开一个窗口，然后对当前`buffer`开启
+`follow-mode`，这样之后另一个窗口显示的内容会是当前窗口的后续。例如，一个文件有
+100行，当前`buffer`只能显示10行，那么另一个窗口将会显示下面10行。如果嫌窗口数还
+是太少，可以继续增多。
+
+![follow-mode](https://emacs-china.org/uploads/default/original/2X/b/b6f11e53b620049c4534a92bd7f22e8f08a15483.png)
+
 ## delsel
 
 由[Kermit95](https://emacs-china.org/u/Kermit95)分享。
