@@ -11,10 +11,17 @@
 
 它默认按键绑定为:
 
+<kbd>C-c <Left></kbd> `winner-undo`
+
+<kbd>C-c <Right></kbd> `winner-redo`
+
+如果不想它绑定在<kbd>C-c</kbd>前缀按键上，可以通过
+
+``` elisp
+(setq winner-dont-bind-my-keys nil)
 ```
-(C-c <Left>) winner-undo
-(C-c <Right>) winner-redo
-```
+
+来禁止。
 
 建议配置:
 
@@ -195,12 +202,20 @@
 
 注：`Emacs` 27+ 自带
 
+## glasses
+
+当遇到驼峰式的变量时，如`CamelCasesName`，但是你比较喜欢`GNU`式的命名方式（使用
+下划线），那么你可以开启`glasses-mode`。它只会让`CamelCasesName`**显示**成
+`Camel_Cases_Name`而不会对原文件做出修改。
+
+不过，大写字母加下划线的组合有点奇怪。
+
 ## subword
 
 由[kinono](https://emacs-china.org/u/kinono)分享。
 
-`subword`可以处理`CamelCasesName`这种驼峰式的单词，`M-f` (`forward-word`) 后，光
-标会依次停在大写的词上。
+`subword`可以处理`CamelCasesName`这种驼峰式的单词，<kbd>M-f</kbd>
+(`forward-word`) 后，光标会依次停在大写的词上。
 
 ```elisp
 (use-package subword
@@ -209,6 +224,10 @@
 ```
 
 如果不想全局打开，也可以只利用`subword-forward`等移动命令。
+
+此外，`subword`包还提供了一个模式叫做`superword-mode`。在这个模式下，
+`this_is_a_symbol`被认为是一个单词。 <kbd>M-f</kbd> (`forward-word`) 可以直接跳
+过。
 
 ## delsel
 
@@ -373,11 +392,11 @@ private double PI       = 3.14159265358939723846264;
 
 ## make isearch behave more like searching in browser
 
-在浏览器里，我们只需要按`C-f`，然后敲入所要搜索的字符串。之后只要按回车就可以不
-断地向下搜索。如果我们需要向上搜索，那么需要点击一下向上的箭头。
+在浏览器里，我们只需要按<kbd>C-f</kbd>，然后敲入所要搜索的字符串。之后只要按回车
+就可以不断地向下搜索。如果我们需要向上搜索，那么需要点击一下向上的箭头。
 
-现在我们在`isearch`里模拟这种情况，还是使用`C-s`来调用`isearch`。但是之后的
-`repeat`操作是交给了回车。
+现在我们在`isearch`里模拟这种情况，还是使用<kbd>C-s</kbd>来调用`isearch`。但是之
+后的`repeat`操作是交给了回车。
 
 首先，我们先定义一下变量来保存当前搜索的方向。
 
@@ -385,8 +404,8 @@ private double PI       = 3.14159265358939723846264;
 (defvar my/isearch--direction nil)
 ```
 
-然后使得`isearch-mode-map`下的`C-s`可以告诉我们当前是在向下搜索；同理，使得
-`isearch-mode-map`下的`C-r`告诉我们是在向上搜索。
+然后使得`isearch-mode-map`下的<kbd>C-s</kbd>可以告诉我们当前是在向下搜索；同理，
+使得`isearch-mode-map`下的<kbd>C-r</kbd>告诉我们是在向上搜索。
 
 ```elisp
 (define-advice isearch-repeat-forward (:after (_))
@@ -529,7 +548,7 @@ private double PI       = 3.14159265358939723846264;
 这样就可以通过调用`ispell-word`来看一个单词是否正确了。如果是`evil`用户，这个函
 数已经被绑定至<kbd>z=</kbd>上了。 \w/
 
-## Calendar
+## calendar
 
 `Emacs`里日历可以拿来干什么呢？
 
