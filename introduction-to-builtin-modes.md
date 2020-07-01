@@ -11,9 +11,9 @@
 
 它默认按键绑定为:
 
-<kbd>C-c <Left></kbd> `winner-undo`
+<kbd>C-c Left</kbd> `winner-undo`
 
-<kbd>C-c <Right></kbd> `winner-redo`
+<kbd>C-c Right</kbd> `winner-redo`
 
 如果不想它绑定在<kbd>C-c</kbd>前缀按键上，可以通过
 
@@ -266,7 +266,9 @@
 
 ## simple
 
-在`modeline`里显示行号、列号以及当前文件的总字符数。
+`simple`包提供的基础命令非常多，这里会慢慢完善。
+
+### 在`modeline`里显示行号、列号以及当前文件的总字符数。
 
 ```elisp
 (use-package simple
@@ -276,6 +278,39 @@
                          (column-number-mode)
                          (size-indication-mode))))
 ```
+
+### `shell-command-on-region`的妙用
+
+在注释中看到不认识的单词，一般做法是复制、打开终端、然后调用外部程序
+[`ydcv`](https://github.com/farseerfc/ydcv-rs)来翻译。
+
+最近发现了`shell-command-on-region`之后，可以省掉前2个步骤了！
+
+例如`papaya`单词不认识，那么选中它，然后<kbd>M-|</kbd>
+(`shell-command-on-region`)运行一下，输入`ydcv`然后执行。如果输出内容比较少，则
+直接会在`echo area`处显示（当`resize-mini-windows`不为`nil`时由
+`max-mini-window-height`决定）。如果想强制它输出在`buffer`下（方便复制），可以在
+上面再封装一层、利用`advice`机制，或者提前创建一个名叫`*Shell Command Output*`的
+`buffer`。
+
+以下是一个`advice`的例子（不推荐使用`advice`，有较大的侵入性，这里只是做个演示）
+
+``` elisp
+(define-advice shell-command-on-region (:around (func &rest args))
+  (let ((max-mini-window-height 0))
+    (apply func args)))
+```
+
+甚至可以直接封装一个叫做`ydcv`的命令来完成这个工作！
+
+``` elisp
+(defun ydcv (beg end)
+  (interactive "r")
+  (let ((max-mini-window-height 0))
+    (shell-command-on-region beg end "ydcv")))
+```
+
+当然还可以有`ydcv-at-point`, `ydcv-dwim`等一系列函数！
 
 ## autorevert
 
@@ -321,6 +356,67 @@
 ```
 
 注：`isearch-lazy-count`和`lazy-count-prefix-format`需要`Emacs` 27+
+
+### 令 isearch 像在浏览器里搜索一样
+
+在浏览器里，我们只需要按<kbd>C-f</kbd>，然后敲入所要搜索的字符串。之后只要按回车
+就可以不断地向下搜索。如果我们需要向上搜索，那么需要点击一下向上的箭头。
+
+现在我们在`isearch`里模拟这种情况，还是使用<kbd>C-s</kbd>来调用`isearch`。但是之
+后的`repeat`操作是交给了回车。
+
+首先，我们先定义一下变量来保存当前搜索的方向。
+
+```elisp
+(defvar my/isearch--direction nil)
+```
+
+然后使得`isearch-mode-map`下的<kbd>C-s</kbd>可以告诉我们当前是在向下搜索；同理，
+使得`isearch-mode-map`下的<kbd>C-r</kbd>告诉我们是在向上搜索。
+
+```elisp
+(define-advice isearch-repeat-forward (:after (_))
+  (setq-local my/isearch--direction 'forward))
+(define-advice isearch-repeat-backward (:after (_))
+  (setq-local my/isearch--direction 'backward))
+```
+
+这里偷懒，采用了`advise`的方式。如果不想侵入，可以自己在上层包装一下对应的命令。
+
+然后在`isearch-mode-map`下的回车操作就是根据`my/isearch--direction`来搜索了。就
+是如此简单。
+
+```elisp
+(defun my/isearch-repeat (&optional arg)
+  (interactive "P")
+  (isearch-repeat my/isearch--direction arg))
+```
+
+当然在按`Esc`键的时候表明搜索已经结束了，此时应该重置当前的方式:
+
+```elisp
+(define-advice isearch-exit (:after nil)
+  (setq-local my/isearch--direction nil))
+```
+
+完整代码见下方:
+
+```elisp
+(use-package isearch
+  :ensure nil
+  :bind (:map isearch-mode-map
+         ([return] . my/isearch-repeat)
+         ([escape] . isearch-exit))
+  :config
+  (defvar my/isearch--direction nil)
+  (define-advice isearch-exit (:after nil)
+    (setq-local my/isearch--direction nil))
+  (define-advice isearch-repeat-forward (:after (_))
+    (setq-local my/isearch--direction 'forward))
+  (define-advice isearch-repeat-backward (:after (_))
+    (setq-local my/isearch--direction 'backward))
+  )
+```
 
 ## tempo
 
@@ -399,67 +495,6 @@ private double PI       = 3.14159265358939723846264;
 ```
 
 其他`align`相关的函数功能还有待开发。
-
-## make isearch behave more like searching in browser
-
-在浏览器里，我们只需要按<kbd>C-f</kbd>，然后敲入所要搜索的字符串。之后只要按回车
-就可以不断地向下搜索。如果我们需要向上搜索，那么需要点击一下向上的箭头。
-
-现在我们在`isearch`里模拟这种情况，还是使用<kbd>C-s</kbd>来调用`isearch`。但是之
-后的`repeat`操作是交给了回车。
-
-首先，我们先定义一下变量来保存当前搜索的方向。
-
-```elisp
-(defvar my/isearch--direction nil)
-```
-
-然后使得`isearch-mode-map`下的<kbd>C-s</kbd>可以告诉我们当前是在向下搜索；同理，
-使得`isearch-mode-map`下的<kbd>C-r</kbd>告诉我们是在向上搜索。
-
-```elisp
-(define-advice isearch-repeat-forward (:after (_))
-  (setq-local my/isearch--direction 'forward))
-(define-advice isearch-repeat-backward (:after (_))
-  (setq-local my/isearch--direction 'backward))
-```
-
-这里偷懒，采用了`advise`的方式。如果不想侵入，可以自己在上层包装一下对应的命令。
-
-然后在`isearch-mode-map`下的回车操作就是根据`my/isearch--direction`来搜索了。就
-是如此简单。
-
-```elisp
-(defun my/isearch-repeat (&optional arg)
-  (interactive "P")
-  (isearch-repeat my/isearch--direction arg))
-```
-
-当然在按`Esc`键的时候表明搜索已经结束了，此时应该重置当前的方式:
-
-```elisp
-(define-advice isearch-exit (:after nil)
-  (setq-local my/isearch--direction nil))
-```
-
-完整代码见下方:
-
-```elisp
-(use-package isearch
-  :ensure nil
-  :bind (:map isearch-mode-map
-         ([return] . my/isearch-repeat)
-         ([escape] . isearch-exit))
-  :config
-  (defvar my/isearch--direction nil)
-  (define-advice isearch-exit (:after nil)
-    (setq-local my/isearch--direction nil))
-  (define-advice isearch-repeat-forward (:after (_))
-    (setq-local my/isearch--direction 'forward))
-  (define-advice isearch-repeat-backward (:after (_))
-    (setq-local my/isearch--direction 'backward))
-  )
-```
 
 ## dired
 
