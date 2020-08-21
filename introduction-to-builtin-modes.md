@@ -678,3 +678,17 @@ private double PI       = 3.14159265358939723846264;
 
 我觉得这样子设置之后，可以轻度取代
 [org-journal](https://github.com/bastibe/org-journal)了?
+
+## strokes
+
+如果你想用鼠标来控制`Emacs`的行为，有点像现在浏览器上的鼠标手势。不过它只能识别
+鼠标移动轨迹所描绘的形状，不能判断它的方向。
+
+1. 执行`strokes-mode`打开`minor-mode`
+2. 执行`strokes-global-set-stroke`在弹出的`buffer`内使用鼠标左键（也可以用中键）
+   绘出想作为快捷操作的大致形状，假设是一个 C 的形状，然后鼠标右键结束绘制。稍后
+   会提示输入与`stroke`对应的命令，假设是`strokes-help`
+3. 移动鼠标，使得它的轨迹是个 C 的形状
+4. `Shift`+鼠标中键以执行与这个`stroke`对应的命令，也就是`strokes-help`
+
+想要更详细的信息？请`M-x strokes-help`.
