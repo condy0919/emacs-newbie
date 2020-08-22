@@ -39,6 +39,32 @@
   :hook (ediff-quit . winner-undo)
 ```
 
+### winner-undo 搭配 transient-map
+
+如果平常有注意观察`text-scale-adjust` (<kbd>C-x C-=</kbd>) 的行为，会发现只需要
+按全一次<kbd>C-x C-=</kbd>，之后可以只按`+`、`-`或者`0`来缩放字体。而如果触发了
+其他按钮则会退出这个状态，它背后主要依赖`transient-map`机制。
+
+我们可以仿照着写一个`transient-winner-undo`的版本，在需要连续执行`winner-undo`的
+时候只需要按一个`u`就好了。
+
+``` elisp
+(defun transient-winner-undo ()
+  "Transient version of `winner-undo'."
+  (interactive)
+  (let ((echo-keystrokes nil))
+    (winner-undo)
+    (message "Winner: [u]ndo [r]edo")
+    (set-transient-map
+     (let ((map (make-sparse-keymap)))
+       (define-key map [?u] #'winner-undo)
+       (define-key map [?r] #'winner-redo)
+       map)
+     t)))
+```
+
+着实方便许多！
+
 ## saveplace
 
 `saveplace`记录了上次打开文件时光标停留在第几行、第几列。如果不想每次打开文件都
