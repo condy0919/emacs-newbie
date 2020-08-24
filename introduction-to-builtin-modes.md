@@ -711,9 +711,9 @@ private double PI       = 3.14159265358939723846264;
 鼠标移动轨迹所描绘的形状，不能判断它的方向。
 
 1. 执行`strokes-mode`打开`minor-mode`
-2. 执行`strokes-global-set-stroke`在弹出的`buffer`内使用鼠标左键（也可以用中键）
-   绘出想作为快捷操作的大致形状，假设是一个 C 的形状，然后鼠标右键结束绘制。稍后
-   会提示输入与`stroke`对应的命令，假设是`strokes-help`
+2. 执行`strokes-global-set-stroke`在弹出的`buffer`内使用`Shift`+鼠标左键（也可以
+   用中键）绘出想作为快捷操作的大致形状，假设是一个 C 的形状，然后鼠标右键结束绘
+   制。稍后会提示输入与`stroke`对应的命令，假设是`strokes-help`
 3. 移动鼠标，使得它的轨迹是个 C 的形状
 4. `Shift`+鼠标中键以执行与这个`stroke`对应的命令，也就是`strokes-help`
 
