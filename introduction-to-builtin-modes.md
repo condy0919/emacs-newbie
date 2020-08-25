@@ -718,3 +718,44 @@ private double PI       = 3.14159265358939723846264;
 4. `Shift`+鼠标中键以执行与这个`stroke`对应的命令，也就是`strokes-help`
 
 想要更详细的信息？请`M-x strokes-help`.
+
+## webjump
+
+你想在`Emacs`里快速调用搜索引擎搜索吗？原来这个功能早已经内置了！
+
+由于`webjump-sites`早已有默认值了，如果想急着体验一下可以立即`M-x webjump`。其原
+理也是相当简单，通过用户选择它想要用的搜索引擎+查询内容构造出实际`url`，然后通过
+`browse-url`调用托管给浏览器。
+
+我的配置是这样的:
+
+``` elisp
+(use-package webjump
+  :ensure nil
+  :bind ("C-c /" . webjump)
+  :custom
+  (webjump-sites '(
+                   ;; Emacs.
+                   ("Emacs Home Page" .
+                    "www.gnu.org/software/emacs/emacs.html")
+                   ("Savannah Emacs page" .
+                    "savannah.gnu.org/projects/emacs")
+
+                   ;; Internet search engines.
+                   ("DuckDuckGo" .
+                    [simple-query "duckduckgo.com"
+                                  "duckduckgo.com/?q=" ""])
+                   ("Google" .
+                    [simple-query "www.google.com"
+                                  "www.google.com/search?q=" ""])
+                   ("Google Groups" .
+                    [simple-query "groups.google.com"
+                                  "groups.google.com/groups?q=" ""])
+                   ("Wikipedia" .
+                    [simple-query "wikipedia.org" "wikipedia.org/wiki/" ""]))))
+```
+
+如果只是想要简单的查询，那么可以作为
+[engine-mode](https://github.com/hrs/engine-mode)的内置替换方案了。
+
+当然，还可以配置多级查询选项，可参考`webjump-to-iwin`的实现。
