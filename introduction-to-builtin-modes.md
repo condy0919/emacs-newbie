@@ -759,3 +759,50 @@ private double PI       = 3.14159265358939723846264;
 [engine-mode](https://github.com/hrs/engine-mode)的内置替换方案了。
 
 当然，还可以配置多级查询选项，可参考`webjump-to-iwin`的实现。
+
+## transient-map 小技巧
+
+因为`transient-map`的优先级比其他`keymap`都要高，所以可以将它当作菜单来使用。
+
+如果嫌`set-transient-map`用起来不方便，可以使用[hydra](https://github.com/abo-abo/hydra)代替。
+
+### 编辑时拷贝 (配合 avy)
+
+如果在编辑文字时发现要拷贝一个`url`，但是当前窗口内有多个`url`，类似的场景如下:
+
+``` C++
+/// url1: https://www.google.com
+/// url2: https://www.baidu.com
+/// url3: https://duckduckgo.com
+int foo(int x) {
+    const char* url = "";
+}
+```
+
+想要为`url`赋值为注释内的 3 个 url 之一。
+
+1. 首先将光标移动到想复制的`url`处
+2. 再将这个`url`复制到`kill-ring`当中
+3. 再回到原来的位置
+4. 再粘贴
+
+``` elisp
+(defhydra hydra-copy (:color blue)
+  "Copy"
+  ("w" copy-word-at-point "word")
+  ("u" copy-url-at-point "url")
+  ("q" nil "cancel"))
+
+(defun copy-url-at-point ()
+  "Copy url at point."
+  (interactive)
+  (save-excursion
+    (avy-goto-word-or-subword-1)
+    (kill-new (thing-at-point 'url))))
+```
+
+这里使用`hydra`来偷懒一下。
+
+效果图:
+
+![copy-url-at-point](https://emacs-china.org/uploads/default/original/2X/c/c7c4c60760fb52fe87d095f7ab7828917b13cd64.gif)
