@@ -88,6 +88,57 @@
   :hook (after-init . global-hl-line-mode))
 ```
 
+## newcomment
+
+如果你想要一个足够简单的注释与反注释功能，那么自带的`newcomment`就可以做到。
+
+``` elisp
+(use-package newcomment
+  :ensure nil
+  :bind ([remap comment-dwim] . #'comment-or-uncomment)
+  :config
+  (defun comment-or-uncomment ()
+    (interactive)
+    (if (region-active-p)
+        (comment-or-uncomment-region (region-beginning) (region-end))
+      (if (save-excursion
+            (beginning-of-line)
+            (looking-at "\\s-*$"))
+          (call-interactively 'comment-dwim)
+        (comment-or-uncomment-region (line-beginning-position) (line-end-position)))))
+  :custom
+  (comment-auto-fill-only-comments t))
+```
+
+上方的函数它可以完成:
+- 当用户选中区间时，在对应区间上注释或者反注释
+- 如果当前行是空的，那么会插入一个注释并且将它对齐 (偷懒，直接调用了`comment-dwim`)
+- 其他情况则对当前行注释或者反注释
+
+这个行为也与[evil-nerd-commenter](https://github.com/redguardtoo/evil-nerd-commenter)保持一致。
+
+这里有必要比较一下其他`comment`函数:
+
+1. `comment-dwim`
+   - 当用户选中区间时，会在对应区间注释或者反注释
+   - 如果当前行是空的，那么会插入一个注释并且将它对齐
+   - 如果使用<kbd>C-u</kbd>前缀，会则调用`comment-kill`来删除这个注释
+   - 其他情况下则调用`comment-indent`在尾部插入注释并对齐
+2. `comment-line`
+   - 当用户选中区间时，会在对应区间**再加上下一行**进行注释或者反注释
+   - 如果当前行是空的，那么只会跳到下一行不会插入注释
+   - 其他情况下则会将当前行注释或者反注释并**跳到下一行**
+3. `comment-box` 看例子就行
+``` elisp
+(defun add (a b)
+  (+ a b))
+
+;;;;;;;;;;;;;;;;;;;;;;
+;; (defun add (a b) ;;
+;;   (+ a b))       ;;
+;;;;;;;;;;;;;;;;;;;;;;
+```
+
 ## hideshow
 
 隐藏、显示结构化数据，如`{ }`里的内容。对于单函数较长的情况比较有用。
@@ -806,3 +857,24 @@ int foo(int x) {
 效果图:
 
 ![copy-url-at-point](https://emacs-china.org/uploads/default/original/2X/c/c7c4c60760fb52fe87d095f7ab7828917b13cd64.gif)
+
+## type-break
+
+历史老物，1994 年的时候就已经出现了。
+
+打字打累了，想休息一下？看代码看累了，想放松一下？
+
+那么它可能会适合你。如果在一段时间内的敲击键盘次数大于阈值，那么它会假设平均速度`35 wpm`，每个单词长度5来推算出要休息多少分钟。
+
+而到达休息状态时，它可能会显示出一个汉诺塔移动的动画。可以`M-x type-break`立即体验！
+
+## timeclock
+
+这是一个计算时间到底去哪里了的包，不过都有`org-mode`了，真的还会有人来用这个吗？
+
+| org             | timeclock       |
+|-----------------|-----------------|
+| `org-clock-in`  | `timeclock-in`  |
+| `org-clock-out` | `timeclock-out` |
+
+功能与`org-mode`几乎一致，不过它可以随时`timeclock-out`不用管记录时间的文件打开与否，而在`org-mode`中`clock-out`则要保证运行`clock`的那个文件还处于打开状态。
