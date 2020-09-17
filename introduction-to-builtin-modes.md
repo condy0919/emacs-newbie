@@ -615,8 +615,8 @@ private double PI       = 3.14159265358939723846264;
 程。
 
 `async-shell-command`则不会阻塞当前`Emacs`，唯一的缺点可能是会多弹出个`buffer`吧。
-如果对`async-shell-command`的结果不是很感兴趣，可能通过`shackle`等类似的工具把忽
-略对应的`buffer`。
+如果对`async-shell-command`的结果不是很感兴趣，可以通过`shackle`等类似的工具忽略
+对应的`buffer`。
 
 如果使用的是`Emacs` **28**的话，并且已经设置了
 
@@ -878,3 +878,8 @@ int foo(int x) {
 | `org-clock-out` | `timeclock-out` |
 
 功能与`org-mode`几乎一致，不过它可以随时`timeclock-out`不用管记录时间的文件打开与否，而在`org-mode`中`clock-out`则要保证运行`clock`的那个文件还处于打开状态。
+
+## elide-head
+
+依旧是怀旧向的内置包，可以将源代码文件的头部中大量的`license`说明折叠起来，效果
+跟`hideshow`包类似。可以通过配置`elide-head-headers-to-hide`来自定义想要的折叠区间。
