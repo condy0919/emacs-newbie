@@ -883,3 +883,9 @@ int foo(int x) {
 
 依旧是怀旧向的内置包，可以将源代码文件的头部中大量的`license`说明折叠起来，效果
 跟`hideshow`包类似。可以通过配置`elide-head-headers-to-hide`来自定义想要的折叠区间。
+
+## midnight 深夜模式
+
+在晚上零点的时候定期执行一些任务，默认是`clean-buffer-list`，可以设置`midnight-hook`来自定义行为。
+
+<kbd>M-x midnight-mode</kbd> 来开启深夜模式。嗯，又到了深夜网抑云音乐时间了。
