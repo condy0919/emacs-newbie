@@ -78,6 +78,30 @@
   :hook (after-init . save-place-mode))
 ```
 
+## recentf
+
+`recentf`保存了历史以来访问过的文件，开启之后可以通过`recentf-open-files`来打开。
+当然如果你使用`ivy`全家桶，也可以通过`counsel-recentf`访问。
+
+建议配置:
+
+``` elisp
+(use-package recentf
+  :ensure nil
+  :hook (after-init . recentf-mode)
+  :custom
+  (recentf-filename-handlers '(abbreviate-file-name))
+  (recentf-exclude `("/ssh:"
+                     "/TAGS\\'"
+                     "COMMIT_EDITMSG\\'")))
+```
+
+默认状态下`recentf`存储的文件是绝对路径，访问一个在家目录下的文件`~/a.cpp`它实际
+存储时是用的`/home/user/a.cpp`，可以自定义`recentf-filename-handlers`来简化存储
+的路径。
+
+而`COMMIT_EDITMSG`是`magit`写`commit message`时的文件，记录此文件无意义，故除外。
+
 ## hl-line
 
 高亮当前行。
