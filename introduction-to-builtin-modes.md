@@ -913,3 +913,177 @@ int foo(int x) {
 在晚上零点的时候定期执行一些任务，默认是`clean-buffer-list`，可以设置`midnight-hook`来自定义行为。
 
 <kbd>M-x midnight-mode</kbd> 来开启深夜模式。嗯，又到了深夜网抑云音乐时间了。
+
+## term mode 相关应用
+
+Emacs 下有几个类似终端模拟器（其实有些不算是），内置的有这 3 个: `shell-mode`, `term-mode`, `eshell`。
+
+如果你不喜欢用 <kbd>M-x compile</kbd> 来编译，习惯在 `shell-mode`, `term-mode`, `eshell` 下直接使用 gcc 或者 make 来编译, 那么你可能需要`compilation-shell-minor-mode`。它可以识别报错，令错误可以点击，快速打开报错文件。自然在调用 <kbd>M-x compile</kbd> 的就是用的 `compilation-mode` 了。
+
+### term-mode
+
+`term-mode` 算是一个完整的终端模拟器，与外部的终端模拟器相比除了刷新速度慢、色彩显示较差之外就没有其他差别了。因此如果是在 Linux/MacOS 平台下且只在本地使用，是比较推荐 `term-mode` 的。`term-mode` 分别可以通过 `term` 和 `ansi-term` 命令启动，唯一的区别是由 `term` 命令启用的终端模拟器下面 <kbd>C-x</kbd> 是直接被终端给捕获了，想要在这个模式下使用 <kbd>C-x C-f</kbd> 来打开文件还需要再额外地做设置，而且重复地使用 `term` 命令只会打开一个 buffer。如果你想多次调用分别打开多个 buffer 的话推荐使用 `ansi-term` 命令。对我个人而言我是更喜欢 `ansi-term` 命令。
+
+``` elisp
+;; 可以使用这种方式将需要的按键解绑
+(use-package term
+  :ensure nil
+  :bind (:map term-raw-map
+         ("M-:" . nil)
+         ("M-x" . nil)))
+```
+
+当然在 `term-mode` 里使用 `htop`, `git`, `fzf`, `neofetch` 这种类似工具是没啥大问题的，但是使用 `vim` 的话就有点拉胯了。一是显示效果非常差，代码高亮都无法显示；二是也不推荐在 Emacs 里使用 `vim`, 编辑文件直接 <kbd>C-x C-f</kbd> 就好。
+
+![htop in term-mode](https://emacs-china.org/uploads/default/original/2X/f/f053ce7513b6e319af1f6eb66403b5cd8ed8110e.png)
+
+![term-mode vs alacritty](https://emacs-china.org/uploads/default/original/2X/4/4eb784393e618176322fca98f4f8556debd5c707.png)
+
+这里不得不提一下, `term-mode` 里两种模式，一个是 `char-mode`, 另一个是 `line-mode`​。 在 `char-mode` 下输入任意一个字符都会直接转发至当前的进程，而 `line-mode` 下则只会遇到 `\n` 的时候才会将以前的内容一起转发。就拿 `htop` 这个命令来说，在 `char-mode` 下按一下 `q` 会直接退出，按一下 `C-n` 会移动光标，但是一旦切换到 `line-mode` 下后就完全变了，连续地按 `q` 不会退出，直到你按下 Enter 键。
+
+`term-mode` 还有一个非常大的优点是与 Emacs 生态的结合。其中一个是可以快速地跳转到上一次的 prompt 处（一般的终端模拟器都没有这个功能），想要启用这功能需要配置 `term-prompt-regexp` 变量，而它的默认值非常不友好，竟然是一个 `^` 表示跳转到开头。建议修改成如下配置，毕竟我们要在 `term-mode` 里使用 shell, 这个配置也是它的注释里所推荐使用的:
+
+``` elisp
+(setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")
+```
+
+这样就可以使用 <kbd>C-c C-p</kbd> 和 <kbd>C-c C-n</kbd> 来上下跳转 prompt 了。
+
+另外一点是目录同步，如果你在 `term-mode` 下进入了 `/tmp` 目录，那么在 Emacs 按 <kbd>C-x C-f</kbd> 就会尝试打开此目录下的文件。如果你是 bash 用户那么这个甚至不需要你配置，其他 shell 用户就必须要在对应 shell 的配置里增加如下配置:
+
+``` shell
+# 这是 zsh 需要做的修改
+#
+# INSIDE_EMACS 则是 Emacs 在创建 term/shell/eshell 时都会带上的环境变量
+# 通常 shell/tramp 会将 TERM 环境变量设置成 dumb，所以这里要将他们排除。
+#
+# shell 下的目录同步不采用这种方式
+function precmd() {
+  if [[ -n "$INSIDE_EMACS" && "$TERM" != "dumb" ]]; then
+    echo -e "\033AnSiTc" "$(pwd)"
+    echo -e "\033AnSiTh" $(hostname -f)
+    echo -e "\033AnSiTu" "$LOGNAME"
+  fi
+}
+```
+
+更详细的说明可以见 [AnsiTermHints](https://www.emacswiki.org/emacs/AnsiTermHints)。
+
+其实它就是在每条命令执行前将自己当前的目录告诉了 `term-mode`, 然后 `term-mode` 再设置 `default-directory` 变量。
+
+![directory track in term-mode](https://emacs-china.org/uploads/default/original/2X/8/894a39c9b662d01199f141d561e8898859404791.png)
+
+另外一种方式则是依赖 Linux 的 `procfs`, 可以获得 `term-mode` 启动的 shell 进程 pid，然后通过读 `/proc/pid/cwd/` 来获取当前路径。
+
+``` elisp
+(defun term-directory-sync ()
+  "Synchronize current working directory."
+  (interactive)
+  (when term-process
+    (let* ((pid (process-id term-process))
+           (dir (file-truename (format "/proc/%d/cwd/" pid))))
+      (setq default-directory dir))))
+
+;; term-process 则是在 term-mode-hook 中通过
+;;
+;; (get-buffer-process (current-buffer))
+;;
+;; 获得
+
+;; 注：以上这种方式对于 vterm 同样适用，因为 vterm 直接暴露了 vterm--process 使用
+;; 起用更加方便
+```
+
+如果你嫌 `term-mode` 的刷新速度太慢、颜色显示太差，可以使用 `vterm`, 但是它的目录同步方式完全与 `term-mode` 不同，这点需要注意。
+
+## shell-mode
+
+`shell-mode` 它实际上不算是一个终端模拟器，它只是简单包装了一下 shell, 所以只能执行一些简单的命令， `htop` 这种存在复杂交互的应用就不行了。它也支持上下跳转到 prompt 处，而且它的默认值足够通用，如果不适用的话用户再自己配置一下 `shell-prompt-pattern`. 通过 <kbd>C-c C-p</kbd> 和 <kbd>C-c C-n</kbd> 来上下跳转 prompt.
+
+自然 `shell-mode` 也支持目录同步，不过它的同步方式与 `term-mode` 不同。 `term-mode` 是要求 shell 主动告诉 Emacs，而 `shell-mode` 是启用了 `shell-dirtrack-mode` 使用正则匹配如 `cd`, `pushd` 等各种可能改变当前目录的各种命令来达到的。
+
+与 `term-mode` 相比而言它实在是没啥多大优势，但是如果你是在通过 `tramp` 编辑一个远程的文件，想在远程机器上运行一些命令，可以直接 <kbd>M-x shell</kbd> 登录远端的机器，而 `term-mode` 则不会识别这种情况，仍是创建一个本地的终端环境。在有 `tramp` 的情况下, `shell-mode` 下路径显示在 `cd` 改变了当前工作目录之后会显示出错， PR 的机会又来了！
+
+![shell-mode vs term-mode](https://emacs-china.org/uploads/default/original/2X/0/048bf1e000bbe91b504b7b142745a25743ab631c.png)
+
+在 `shell-mode` 里没法像终端模拟器那样通过 <kbd>M-.</kbd> 来直接输入上一命令的最后一个参数，但是多数 shell 都实现提供了一个内部变量 `$_` 支持。
+
+``` shell
+echo hello
+echo $_
+
+# 输出如下
+#
+# hello
+# hello
+```
+
+另外一个独到的地方是它可以当做 sh 文件的 REPL。例如你在编写这样的一个 sh 脚本:
+
+``` bash
+echo 'hello, world'
+```
+
+可以直接输入 <kbd>C-c C-n</kbd> (`sh-send-line-or-region-and-step`) 将当前行发送至 shell 执行。
+
+![shell repl](https://emacs-china.org/uploads/default/original/2X/7/7bec91f50446aeaf57aab5fcff8247c39442a128.png)
+
+### eshell
+
+`eshell` 则是完全由 elisp 实现的 shell，正因为它是 elisp 实现的，所以在所有地方下都可以使用（推荐 Windows 用户使用）。当然也因为它是 elisp 实现的，所以速度上会稍微慢一点。此外如果你是在远程编辑文件，那么使用 `eshell` 可以直接编辑远程文件，因为它是完全用 elisp 实现的，可以共享当前 Emacs 的状态，自然 tramp 也是可以直接共享的，当然目录同步的更不在话下了。
+
+它的语法与与 bash/zsh 的语法不完全一致，例如一个 for 循环
+
+``` shell
+# 在 bash/zsh 里这样写的
+for i in *.el; do
+  rm $i
+done
+
+# 在 eshell 里则是这样写的
+for i in *.el {
+  rm $i
+}
+```
+
+在 `eshell` 里执行类似 `htop`, `git diff` 这样的命令也是可以的，但是它不是直接支持，而是间接调用 `term-mode` 来完成。只需要将对应的命令加入至 `eshell-visual-commands`, `eshell-visual-subcommands` 和 `eshell-visual-options` 中即可，建议配置:
+
+``` elisp
+(use-package em-term
+  :ensure nil
+  :custom
+  (eshell-visual-commands '("top" "htop" "less" "more" "bat"))
+  (eshell-visual-subcommands '(("git" "help" "lg" "log" "diff" "show")))
+  (eshell-visual-options '(("git" "--help" "--paginate"))))
+```
+
+因为 `eshell` 不能复用其他 shell 的插件，所以 `eshell` 有自己的生态，可以考虑使用 `eshell-git-prompt` 等包。
+
+`eshell` 还有一个最大的缺点是补全系统。其他 shell 都有自己的 `bash-completion`, `zsh-completion` 包，但是 eshell 却没有，但是它只提供了一个基础的补全功能模块 `pcomplete`. 通过它我们也可以完成基础命令的补全，但是如果想要全部实现的话还是得费一番功夫的。基于这个痛点，Emacs 社区有相应的增强包 [emacs-fish-completion](https://github.com/ambrevar/emacs-fish-completion), 在补全时将对应的命令发送给 fish 然后再截获、解析它的输出。以这种形式扩展的 pcomplete 不用再重复走 `bash-completion`, `zsh-completion` 的路。
+
+因为 `eshell` 与 `shell-mode` 都使用了 pcomplete, 所以这两者都能够享受到由此带来的补全效果。
+
+默认情况下，在 `eshell` 里 <kbd>C-d</kbd> 只会删除字符不会在当前输入为空时退出、 <kbd>M-.</kbd> 不会自动插入上一命令的最后一个参数，这可能会令习惯使用外部 shell 的用户非常不习惯，可以通过如下配置将它们带回来。
+
+``` elisp
+;; eshell 自己有实现的一个比较好的 C-d 函数，但是它默认没有开启
+;; 这里显式地将这个函数导出。
+(use-package em-rebind
+  :ensure nil
+  :commands eshell-delchar-or-maybe-eof)
+
+(use-package esh-mode
+  :ensure nil
+  :bind (:map eshell-mode-map
+         ("C-d" . eshell-delchar-or-maybe-eof)
+         ("M-." . eshell-yank-last-arg))
+  :config
+  (defun eshell-yank-last-arg ()
+    "Insert the last arg of the previous command."
+    (interactive)
+    (insert "$_")
+    (pcomplete-expand))
+  )
+```
+
+关于 `$_` 的说明可以看 [eshell](https://www.gnu.org/software/emacs/manual/html_mono/eshell.html) 文档的 Expansion 节。 eshell 这样设计也与其他 shell 保持一致。
