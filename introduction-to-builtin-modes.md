@@ -1072,6 +1072,8 @@ for i in *.el {
   :ensure nil
   :commands eshell-delchar-or-maybe-eof)
 
+;; Emacs 28 可以直接定义在 eshell-mode-map 里，但是 27 的话需要将相关的键绑定定义在
+;; eshell-first-time-mode-hook 这个 hook 里
 (use-package esh-mode
   :ensure nil
   :bind (:map eshell-mode-map
