@@ -996,6 +996,55 @@ function precmd() {
 
 如果你嫌 `term-mode` 的刷新速度太慢、颜色显示太差，可以使用 `vterm`, 但是它的目录同步方式完全与 `term-mode` 不同，这点需要注意。
 
+### hacking term-mode
+
+Emacs 自带一个 `term-paste` 函数，可以在 char mode 里粘贴文本。不过有时候我们复制的文本最后有个换行，一粘贴就会立即运行，很讨厌。下面这个版本处理了有换行符和多行的情况：
+
+``` elisp
+(defun my-term-yank ()
+  "Paste recent kill into terminal, in char mode."
+  (interactive)
+  (when-let ((text (current-kill 0))
+             ;; Remove newlines at the beginning/end.))
+             (text (string-trim text "\n+" "\n+")))
+    (when (or (not (string-match-p "\n" text))
+              (y-or-n-p "You are pasting a multiline string.  Continue? "))
+      (term-send-raw-string text))))
+```
+
+可以把它绑定到 `term-raw-map` 的 `C-M-v` 上，用起来就和专门的终端模拟器差不多了。
+
+下面的代码提供了 `my-term-browse-mode` 命令，执行以后就会把终端变成一个只读的普通 buffer，快捷键也和普通 buffer 一样，方便我们浏览比较长的输出或者复制东西。
+
+``` elisp
+(defvar my-term-browse-mode-map
+  (make-sparse-keymap)
+  "Keymap for `my-term-browse-mode'.")
+
+(defun my-term-browse-mode ()
+  "Turn the terminal buffer into a read-only normal buffer."
+  (interactive)
+  ;; Workaround: Without this code, there's a bug: Press `C-p' in char mode to
+  ;; browse history, then `C-n' to go back, then `my-term-browse-mode', then
+  ;; `C-n', you'll find a newline is produced.  Call `term-char-mode', that
+  ;; newline is sent to the shell.  This is not a problem with
+  ;; `my-term-browse-mode', since `term-line-mode' also has it.
+  (let ((inhibit-read-only t))
+    (save-excursion)
+    (goto-char (point-max))
+    (while (eq (char-before) ?\n)
+      (delete-char -1)))
+  ;; Idea: We could put a `read-only' property to the region before
+  ;; `process-mark', so current input could be edited, but I think there's
+  ;; little benefit.
+  (setq buffer-read-only t)
+  (remove-hook 'pre-command-hook #'term-set-goto-process-mark t)
+  (remove-hook 'post-command-hook #'term-goto-process-mark-maybe t)
+  (use-local-map my-term-browse-mode-map))
+```
+
+browse mode 下的键位由 `my-term-browse-mode-map` 指定，可以把 `term-char-mode`, `term-previous-prompt`, `term-next-prompt` 等命令绑定在里面。
+
 ## shell-mode
 
 `shell-mode` 它实际上不算是一个终端模拟器，它只是简单包装了一下 shell, 所以只能执行一些简单的命令， `htop` 这种存在复杂交互的应用就不行了。它也支持上下跳转到 prompt 处，而且它的默认值足够通用，如果不适用的话用户再自己配置一下 `shell-prompt-pattern`. 通过 <kbd>C-c C-p</kbd> 和 <kbd>C-c C-n</kbd> 来上下跳转 prompt.
