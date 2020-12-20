@@ -1030,10 +1030,10 @@ Emacs 自带一个 `term-paste` 函数，可以在 char mode 里粘贴文本。�
   ;; newline is sent to the shell.  This is not a problem with
   ;; `my-term-browse-mode', since `term-line-mode' also has it.
   (let ((inhibit-read-only t))
-    (save-excursion)
-    (goto-char (point-max))
-    (while (eq (char-before) ?\n)
-      (delete-char -1)))
+    (save-excursion
+      (goto-char (point-max))
+      (while (eq (char-before) ?\n)
+        (delete-char -1))))
   ;; Idea: We could put a `read-only' property to the region before
   ;; `process-mark', so current input could be edited, but I think there's
   ;; little benefit.
