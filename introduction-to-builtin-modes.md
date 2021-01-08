@@ -98,7 +98,9 @@
 
 默认状态下`recentf`存储的文件是绝对路径，访问一个在家目录下的文件`~/a.cpp`它实际
 存储时是用的`/home/user/a.cpp`，可以自定义`recentf-filename-handlers`来简化存储
-的路径。
+的路径。需要注意的是，一旦使用了`abbreviate-file-name`，那么`recentf-exclude`变
+量内的元素也必须要是`abbrev`过后的字符串，因为 Emacs 是使用`string-prefix-p`来匹
+配的。
 
 而`COMMIT_EDITMSG`是`magit`写`commit message`时的文件，记录此文件无意义，故除外。
 
