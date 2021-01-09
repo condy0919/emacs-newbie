@@ -574,11 +574,16 @@
 `define-abbrev`来实现：
 
 ```elisp
-(define-abbrev emacs-lisp-mode-abbrev-table ";license" "" 'tempo-template-license)
+(define-abbrev emacs-lisp-mode-abbrev-table "2license" "" 'tempo-template-license)
 ```
 
-这里只需要在`elisp-mode`下开启`abbrev-mode`，然后输入`;license `就会实现自动替换
+这里只需要在`elisp-mode`下开启`abbrev-mode`，然后输入`2license `就会实现自动替换
 （注意，最后要有一个空格）。
+
+此外，`abbrev-expand`是以 WORD 为展开，如果在`emacs-lisp-mode`下使用`;license`则
+会不生效，因为`;license`是由 2 个单词组成的。
+
+PS: 可以通过<kbd>C-h s</kbd> (`describe-syntax`) 来查看当前当前 mode 的 syntax-table.
 
 ## align
 
