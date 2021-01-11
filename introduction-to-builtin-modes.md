@@ -585,6 +585,20 @@
 
 PS: 可以通过<kbd>C-h s</kbd> (`describe-syntax`) 来查看当前当前 mode 的 syntax-table.
 
+如果实在想通过多个 WORD 来转换也不是不行，注意到`define-abbrev-table`里是使用
+`:regexp`来指定所提取的内容。于是可以使用`\w \w`来匹配前面的 2 个单词，代码如下：
+
+``` elisp
+;; From https://lists.gnu.org/archive/html/emacs-devel/2021-01/msg00553.html
+(define-abbrev-table 'fundamental-mode-abbrev-table
+ '(
+   ("a que" "a qué" nil :count 0))
+ "Uwe's table"
+ :regexp "\\(\\w+ \\w+\\)")
+```
+
+可以切换到`fundamental-mode`体验一下。
+
 ## align
 
 听说有些写`java`的朋友特别喜欢将变量的`=`对齐，即原来的代码是这样的:
