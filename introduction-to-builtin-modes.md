@@ -218,8 +218,8 @@
 
 附效果图:
 
-![before-fold](https://emacs-china.org/uploads/default/original/2X/c/c204b95093febf0f2455b17e1c98c3c5d7858a13.png)
-![after-fold](https://emacs-china.org/uploads/default/original/2X/a/a88653d0d1f48d0e23d1814e46ba998390fc61da.png)
+![before-fold](images/c204b95093febf0f2455b17e1c98c3c5d7858a13.png)
+![after-fold](images/a88653d0d1f48d0e23d1814e46ba998390fc61da.png)
 
 ## whitespace
 
@@ -285,7 +285,7 @@
 
 比较好的是能指示过长的行，这样都不需要装那种显示一条竖线的插件了。
 
-![效果图](https://emacs-china.org/uploads/default/optimized/2X/f/f3820ca342843118043eb220ce9cf77d00805f7b_2_690x297.png)
+![效果图](images/f3820ca342843118043eb220ce9cf77d00805f7b.png)
 
 ## so-long
 
@@ -340,7 +340,7 @@
 100行，当前`buffer`只能显示10行，那么另一个窗口将会显示下面10行。如果嫌窗口数还
 是太少，可以继续增多。
 
-![follow-mode](https://emacs-china.org/uploads/default/original/2X/b/b6f11e53b620049c4534a92bd7f22e8f08a15483.png)
+![follow-mode](images/b6f11e53b620049c4534a92bd7f22e8f08a15483.png)
 
 ## delsel
 
@@ -780,9 +780,9 @@ private double PI       = 3.14159265358939723846264;
 
 附图:
 
-![org-agenda-add-entry-to-org-agenda-diary-file](https://emacs-china.org/uploads/default/original/2X/a/a2dbd0a45689694308f31218030d6f95cecb7d93.png)
+![org-agenda-add-entry-to-org-agenda-diary-file](images/a2dbd0a45689694308f31218030d6f95cecb7d93.png)
 
-![org-agenda-diary-file](https://emacs-china.org/uploads/default/original/2X/d/d8fd2964e8999f56e88c55b07043c804d02be37d.png)
+![org-agenda-diary-file](images/d8fd2964e8999f56e88c55b07043c804d02be37d.png)
 
 需要注意，它默认不会自动保存`org-agenda-diary-file`。如果不喜欢这一点，可以利用
 `advice`来修正一下。
@@ -901,7 +901,7 @@ int foo(int x) {
 
 效果图:
 
-![copy-url-at-point](https://emacs-china.org/uploads/default/original/2X/c/c7c4c60760fb52fe87d095f7ab7828917b13cd64.gif)
+![copy-url-at-point](images/c7c4c60760fb52fe87d095f7ab7828917b13cd64.gif)
 
 ## type-break
 
@@ -956,9 +956,9 @@ Emacs 下有几个类似终端模拟器（其实有些不算是），内置的�
 
 当然在 `term-mode` 里使用 `htop`, `git`, `fzf`, `neofetch` 这种类似工具是没啥大问题的，但是使用 `vim` 的话就有点拉胯了。一是显示效果非常差，代码高亮都无法显示；二是也不推荐在 Emacs 里使用 `vim`, 编辑文件直接 <kbd>C-x C-f</kbd> 就好。
 
-![htop in term-mode](https://emacs-china.org/uploads/default/original/2X/f/f053ce7513b6e319af1f6eb66403b5cd8ed8110e.png)
+![htop in term-mode](images/f053ce7513b6e319af1f6eb66403b5cd8ed8110e.png)
 
-![term-mode vs alacritty](https://emacs-china.org/uploads/default/original/2X/4/4eb784393e618176322fca98f4f8556debd5c707.png)
+![term-mode vs alacritty](images/4eb784393e618176322fca98f4f8556debd5c707.png)
 
 这里不得不提一下, `term-mode` 里两种模式，一个是 `char-mode`, 另一个是 `line-mode`​。 在 `char-mode` 下输入任意一个字符都会直接转发至当前的进程，而 `line-mode` 下则只会遇到 `\n` 的时候才会将以前的内容一起转发。就拿 `htop` 这个命令来说，在 `char-mode` 下按一下 `q` 会直接退出，按一下 `C-n` 会移动光标，但是一旦切换到 `line-mode` 下后就完全变了，连续地按 `q` 不会退出，直到你按下 Enter 键。
 
@@ -992,7 +992,7 @@ function precmd() {
 
 其实它就是在每条命令执行前将自己当前的目录告诉了 `term-mode`, 然后 `term-mode` 再设置 `default-directory` 变量。
 
-![directory track in term-mode](https://emacs-china.org/uploads/default/original/2X/8/894a39c9b662d01199f141d561e8898859404791.png)
+![directory track in term-mode](images/894a39c9b662d01199f141d561e8898859404791.png)
 
 另外一种方式则是依赖 Linux 的 `procfs`, 可以获得 `term-mode` 启动的 shell 进程 pid，然后通过读 `/proc/pid/cwd/` 来获取当前路径。
 
@@ -1074,7 +1074,7 @@ browse mode 下的键位由 `my-term-browse-mode-map` 指定，可以把 `term-c
 
 与 `term-mode` 相比而言它实在是没啥多大优势，但是如果你是在通过 `tramp` 编辑一个远程的文件，想在远程机器上运行一些命令，可以直接 <kbd>M-x shell</kbd> 登录远端的机器，而 `term-mode` 则不会识别这种情况，仍是创建一个本地的终端环境。在有 `tramp` 的情况下, `shell-mode` 下路径显示在 `cd` 改变了当前工作目录之后会显示出错， PR 的机会又来了！
 
-![shell-mode vs term-mode](https://emacs-china.org/uploads/default/original/2X/0/048bf1e000bbe91b504b7b142745a25743ab631c.png)
+![shell-mode vs term-mode](images/048bf1e000bbe91b504b7b142745a25743ab631c.png)
 
 在 `shell-mode` 里没法像终端模拟器那样通过 <kbd>M-.</kbd> 来直接输入上一命令的最后一个参数，但是多数 shell 都实现提供了一个内部变量 `$_` 支持。
 
@@ -1096,7 +1096,7 @@ echo 'hello, world'
 
 可以直接输入 <kbd>C-c C-n</kbd> (`sh-send-line-or-region-and-step`) 将当前行发送至 shell 执行。
 
-![shell repl](https://emacs-china.org/uploads/default/original/2X/7/7bec91f50446aeaf57aab5fcff8247c39442a128.png)
+![shell repl](images/7bec91f50446aeaf57aab5fcff8247c39442a128.png)
 
 ### eshell
 
