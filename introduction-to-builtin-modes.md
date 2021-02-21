@@ -560,7 +560,7 @@
     "SPDX-License-Identifier: " (completing-read "License: "
                                                  license-spdx-identifiers)
     comment-end > n>)
-  'license
+  "license"
   "Insert a SPDX license.")
 ```
 
