@@ -114,6 +114,37 @@
   :hook (after-init . global-hl-line-mode))
 ```
 
+## repeat-mode
+
+如果有订阅 emacs-devel 邮件列表的话会发现曾经有一个投票令 <kbd>C-x o</kbd> 调用的是一个 transient-map，后续再切换窗口可以直接用 `o` 来切换。[POLL: make C-x o transient](https://lists.gnu.org/archive/html/emacs-devel/2021-01/msg01120.html)
+
+这样的一个好处是可以减少 Ctrl 按键的使用，降低 RSI 的风险；此外， transient-map 下还有一个 keymap 可以自定义，扩展性就更强了（例如可以在这个 keymap 上再定义 `O` 为 `backward-other-window` 函数）。
+
+在最终的实现里则是新增了一个 `repeat-mode`, 这个 `minor-mode` 在 `post-command-hook` 新增了一个 `repeat-post-hook` 钩子。这个钩子函数检测如果最后调用的函数有 `repeat-map` 属性，接下来会对这个 keymap 使用 `set-transient-map`。
+
+Emacs 内部已经提供了一些常用的函数 repeat-map:
+
+- 切换窗口 `other-window`, 可以使用 <kbd>C-x o o o</kbd> 来切换窗口了
+- 缩小/增大窗口 `enlarge-window` 系列，可以使用 <kbd>C-x { { {</kbd> 来缩小窗口，其他命令类似
+- `undo`， <kbd>C-x u u u</kbd> 来进行 3 次 `undo`
+- `next-error`, <kbd>M-g n n n</kbd> 调用 3 次 `next-error`
+
+做一个对比，如果没有启用 `repeat-map`, 那么调用 3 次 `next-error` 需要 <kbd>M-g n M-g n M-g n</kbd>，操作极其不连贯。而在 `repeat-map` 加持下的 <kbd>M-g n n n</kbd> 就显得非常自然。
+
+而它的开启方式也非常简单，打开 `repeat-mode` 这个 minor-mode 即可。
+
+``` emacs-lisp
+(use-package repeat
+  :ensure nil
+  :hook (after-init . repeat-mode)
+  :custom
+  (repeat-exit-key (kbd "RET")))
+```
+
+注意，因为它是在 `post-command-hook` 里增加了一个钩子，所以会拖慢一个按键的总体运行时间，当然这点差异非常不明显。
+
+注: `repeat-mode` Emacs 28 上可用
+
 ## newcomment
 
 如果你想要一个足够简单的注释与反注释功能，那么自带的`newcomment`就可以做到。
@@ -1066,7 +1097,7 @@ Emacs 自带一个 `term-paste` 函数，可以在 char mode 里粘贴文本。�
 
 browse mode 下的键位由 `my-term-browse-mode-map` 指定，可以把 `term-char-mode`, `term-previous-prompt`, `term-next-prompt` 等命令绑定在里面。
 
-## shell-mode
+### shell-mode
 
 `shell-mode` 它实际上不算是一个终端模拟器，它只是简单包装了一下 shell, 所以只能执行一些简单的命令， `htop` 这种存在复杂交互的应用就不行了。它也支持上下跳转到 prompt 处，而且它的默认值足够通用，如果不适用的话用户再自己配置一下 `shell-prompt-pattern`. 通过 <kbd>C-c C-p</kbd> 和 <kbd>C-c C-n</kbd> 来上下跳转 prompt.
 
