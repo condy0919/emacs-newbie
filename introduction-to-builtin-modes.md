@@ -1103,6 +1103,8 @@ browse mode 下的键位由 `my-term-browse-mode-map` 指定，可以把 `term-c
 
 自然 `shell-mode` 也支持目录同步，不过它的同步方式与 `term-mode` 不同。 `term-mode` 是要求 shell 主动告诉 Emacs，而 `shell-mode` 是启用了 `shell-dirtrack-mode` 使用正则匹配如 `cd`, `pushd` 等各种可能改变当前目录的各种命令来达到的。
 
+如果发现在 `shell-mode` 下目录显示不正确时，可以通过 <kbd>M-x shell-resync-dirs</kbd> 来同步。
+
 与 `term-mode` 相比而言它实在是没啥多大优势，但是如果你是在通过 `tramp` 编辑一个远程的文件，想在远程机器上运行一些命令，可以直接 <kbd>M-x shell</kbd> 登录远端的机器，而 `term-mode` 则不会识别这种情况，仍是创建一个本地的终端环境。在有 `tramp` 的情况下, `shell-mode` 下路径显示在 `cd` 改变了当前工作目录之后会显示出错， PR 的机会又来了！
 
 ![shell-mode vs term-mode](https://emacs-china.org/uploads/default/original/2X/0/048bf1e000bbe91b504b7b142745a25743ab631c.png)
