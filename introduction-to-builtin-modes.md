@@ -141,6 +141,24 @@ Emacs 内部已经提供了一些常用的函数 repeat-map:
   (repeat-exit-key (kbd "RET")))
 ```
 
+同时 repeated lambda 也支持了，观察其用法发现在 lambda 中设置对应的 `repeat-map` 即可，由此不难猜出实现。
+
+``` emacs-lisp
+(defvar other-window-repeat-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "o" 'other-window)
+    (define-key map "O" (lambda ()
+                          (interactive)
+                          (setq repeat-map 'other-window-repeat-map)
+                          (other-window -1)))
+    map)
+  "Keymap to repeat other-window key sequences.  Used in `repeat-mode'.")
+
+(put 'other-window 'repeat-map 'other-window-repeat-map)
+```
+
+正因如此，<kbd>C-x o O o</kbd>的调用变成可行了。
+
 注意，因为它是在 `post-command-hook` 里增加了一个钩子，所以会拖慢一个按键的总体运行时间，当然这点差异非常不明显。
 
 注: `repeat-mode` Emacs 28 上可用
