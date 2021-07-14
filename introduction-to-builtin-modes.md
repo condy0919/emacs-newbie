@@ -161,6 +161,8 @@ Emacs 内部已经提供了一些常用的函数 repeat-map:
 
 注意，因为它是在 `post-command-hook` 里增加了一个钩子，所以会拖慢一个按键的总体运行时间，当然这点差异非常不明显。
 
+如果想查看哪些命令定义了 `repeat-map`, <kbd>M-x describe-repeat-maps</kbd> 即可。
+
 注: `repeat-mode` Emacs 28 上可用
 
 ## newcomment
@@ -734,20 +736,48 @@ private double PI       = 3.14159265358939723846264;
 ``` elisp
 ;; 修改自 https://www.emacswiki.org/emacs/DiredOmitMode
 (define-advice dired-do-print (:override (&optional _))
-    "Show/hide dotfiles."
-    (interactive)
-    (if (or (not (boundp 'dired-dotfiles-show-p)) dired-dotfiles-show-p)
-        (progn
-          (setq-local dired-dotfiles-show-p nil)
-          (dired-mark-files-regexp "^\\.")
-          (dired-do-kill-lines))
-      (revert-buffer)
-      (setq-local dired-dotfiles-show-p t)))
+  "Show/hide dotfiles."
+  (interactive)
+  (if (or (not (boundp 'dired-dotfiles-show-p)) dired-dotfiles-show-p)
+      (progn
+        (setq-local dired-dotfiles-show-p nil)
+        (dired-mark-files-regexp "^\\.")
+        (dired-do-kill-lines))
+    (revert-buffer)
+    (setq-local dired-dotfiles-show-p t)))
 ```
 
 这样只要按一下<kbd>P</kbd>就可以达到隐藏、显示的切换了。
 
 如果不想自己写`elisp`，这里也有一个现成的包 https://github.com/mattiasb/dired-hide-dotfiles
+
+### RET 后仅保留一个 dired buffer
+
+之前要完成这个功能，需要将 dired-mode 中 <kbd>RET</kbd> 绑定的 `dired-find-file` remap 至 `dired-find-alternate-file`。但是 Emacs 28 现在直接提供了一个用户选项来开启这个功能。
+
+``` elisp
+(use-package dired
+  :ensure nil
+  :custom
+  (dired-kill-when-opening-new-dired-buffer t))
+```
+
+即可。
+
+``` elisp
+;; For Emacs 27
+(use-package dired
+  :ensure nil
+  :bind (:map dired-mode-map
+         ([remap dired-find-file] . dired-find-alternate-file))
+  :config
+  ;; Enable the disabled dired commands
+  (put 'dired-find-alternate-file 'disabled nil))
+```
+
+默认 `dired-find-alternate-file` 是被禁用的，需要将其解禁。
+
+注意: `dired-up-directory` 还是会创建新的 buffer.
 
 ## ispell
 
