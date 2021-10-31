@@ -1145,6 +1145,8 @@ Emacs 自带一个 `term-paste` 函数，可以在 char mode 里粘贴文本。�
 
 browse mode 下的键位由 `my-term-browse-mode-map` 指定，可以把 `term-char-mode`, `term-previous-prompt`, `term-next-prompt` 等命令绑定在里面。
 
+PS: 如果只是从上到下浏览的话可以 <kbd>C-c C-q</kbd> 开启 term-pager 模式，然后运行 `cat /tmp/long-lines.txt` 的效果就会像 `more /tmp/long-lines.txt` 一样。
+
 ### shell-mode
 
 `shell-mode` 它实际上不算是一个终端模拟器，它只是简单包装了一下 shell, 所以只能执行一些简单的命令， `htop` 这种存在复杂交互的应用就不行了。它也支持上下跳转到 prompt 处，而且它的默认值足够通用，如果不适用的话用户再自己配置一下 `shell-prompt-pattern`. 通过 <kbd>C-c C-p</kbd> 和 <kbd>C-c C-n</kbd> 来上下跳转 prompt.
@@ -1240,3 +1242,120 @@ for i in *.el {
 ```
 
 关于 `$_` 的说明可以看 [eshell](https://www.gnu.org/software/emacs/manual/html_mono/eshell.html) 文档的 Expansion 节。 eshell 这样设计也与其他 shell 保持一致。
+
+## 文件的艺术
+
+### file cache
+
+如果在 <kbd>C-x C-f</kbd> 时不小心误按 <kbd>C-TAB</kbd> (默认是 `file-cache-minibuffer-complete`，不过好像 helm 把这个绑定给去掉了) 就会发现，其实 Emacs 还自带了一个叫做 file cache 的东西。
+
+假设当前目录结构是这样的:
+
+```text
+$ tree
+
+.
+├── proj1
+│   ├── main.cpp
+│   └── Makefile
+└── proj2
+    ├── main.cpp
+    └── Makefile
+
+2 directories, 4 files
+```
+
+在使用 `M-x file-cache-add-directory-recursively` (如果嫌太慢可以用 `file-cache-add-directory-using-find`, 实际是调用的 `find . -name '*'`) 将这个目录以及子目录下的文件添加到 file cache 中。
+
+然后在 <kbd>C-x C-f</kbd> 的时候，即使当前目录是在 `/usr/share/include/`，输入 `main` 然后再按 <kbd>C-TAB</kbd> 仍然可以补全成 `/path/to/proj1/main.cpp`. 因为 file cache 里存在多个候选项，再次按 <kbd>C-TAB</kbd> 就会切换成 `/path/to/proj2/main.cpp`.
+
+如果想把 file cache 给清除掉，那么就直接 `M-x file-cache-clear-cache` 即可。另还可以使用 `M-x file-cache-display` 来查看 file cache 的内容。
+
+![file-cache](https://emacs-china.org/uploads/default/original/3X/c/6/c621b113e31104afaf91c2ff3642683c79aba951.png)
+
+注意，file cache 本身没有做数据的持久化，重启 Emacs 会丢失 file cache，因此如果想每次都让 Emacs 加载一些文件的话得在配置里人工指定。实际上 file cache 存储在 `file-cache-alist` 变量中，因此可以自己保存此变量。
+
+```elisp
+;; 将 ~/projects 下的所有文件都加入
+(file-cache-add-directory-using-find "~/projects")
+
+;; 通常是 ~/.emacs.d/elpa/ 包下文件
+(file-cache-add-directory-list load-path)
+```
+
+单项目下的文件跳转更适合用 `projectile`/`project`，如果频繁在多个项目间跳转，那么可以尝试将多个项目的文件都加入到 file cache 中。
+
+### filesets
+
+如果你**频繁**地在一些 buffers 中操作，那么可以把这些 buffers 加入到 filesets 组中。Emacs manual 中推荐的用法需要用户手工调用 `filesets-init`，但是它会额外地构建 menu-bar 菜单，作为一个不使用 menu-bar 的人来说这点可以算是无用功了。
+
+```elisp
+;; 如果你不需要数据持久化，那么就不需要下面的 hook 了
+(use-package filesets
+  :ensure nil
+  :commands filesets-run-cmd ;; ...
+  :hook (kill-emacs . filesets-save-config))
+```
+
+因为 filesets 库里默认标记 `autoload` 的只有 `filesets-init` 函数, 而我们又没有使用这函数，导致 filesets 无法被动加载，于是只能手动导出需要的命令了。
+
+然后就可以通过 `M-x filesets-add-buffer` 来将当前 buffer 加入至一个 filesets 组中；使用 `M-x filesets-remove-buffer` 来将当前 buffer 从 filesets 组删除。需要注意，filesets 会使用 custom system 将组信息 (`filesets-data`) 持久化。如果不想弄脏 `custom.el` 的话可以不调用 `filesets-save-config`。
+
+个人觉得比较常用的命令就只有如下几个:
+
+- `filesets-run-cmd` (属 `Run Shell Command` 最常用)
+- `filesets-open` 当 filesets 组过大时需注意
+- `filesets-close`
+
+剩下的都的都是 filesets 所提供的必要性功能。
+
+- `filesets-edit` (使用 custom interface 编辑 `filesets-data`，不过直接编辑可能更快一点)
+- `filesets-add-buffer`
+- `filesets-remove-buffer`
+- `filesets-save-config`
+
+由于 Emacs 本身就提供了 `multi-isearch-files`, `multi-isearch-files-regexp` 和 `multi-occur` 等函数，用 filesets 的好处则是将操作的文件组给记录下来方便后期的操作。
+
+### Shadow files
+
+Shadow files 可以算是 Emacs 内的**单向**同步机制。例如在本地写完代码后想上传至服务器，那么就可以通过这个机制来完成。为什么不直接用 tramp 呢？因为 lsp-mode 默认没法在 tramp 上补全，还需另外设置，而且 tramp 在每次保存文件的时候都会同步一次，shadow file 则是将此文件加入到写队列中，最后通过 `M-x shadow-copy-files` 来同步。
+
+```elisp
+(use-package shadowfile
+  :ensure nil
+  :config
+  (shadow-initialize)
+  (setq shadow-literal-groups
+        '(("/Youmu:/tmp/a.cpp"                  ;; 本机，本机前缀需要跟 `shadow-system-name' 一样
+           "/ssh:the-remote-machine:/tmp/a.cpp" ;; 跟 tramp 的格式一样
+           ))))
+```
+
+`shadow-literal-groups` 用于单文件的同步，如上配置表示本机和 `the-remote-machine` 的 `/tmp/a.cpp` 需要同步。尝试一下从本机同步到远程的机器上，在 `/tmp/a.cpp` 里随便写入点东西。由于前面已经调用过 `shadow-initialize` 了，所以当一个文件需要同步的时候，会在 <kbd>C-x C-s</kbd> 时弹出提醒 `Use C-x 4 s to update shadows`, 当然也可以直接调用 `M-x shadow-copy-files`. `shadowfile` 同步依赖 tramp，所以无法避免 tramp 自身卡顿的问题，**但是它可以避免通过 tramp 直接编辑时频繁保存带来的同步问题**。
+
+![shadowfile-sync-from-local-to-remote](https://emacs-china.org/uploads/default/original/3X/0/f/0f2f108c6ac35d1d2966bc6b36c7f1005e2f4763.png)
+
+上图显示 `shadowfile` 成功地将本地的文件同步至了远端。
+
+当然如果仅仅是同步一个文件，那么简单的 scp 即可，也没必须引入这么多的复杂度了。
+
+```elisp
+(use-package shadowfile
+  :ensure nil
+  :config
+  (shadow-initialize)
+  (setq shadow-regexp-groups
+        '(("/Youmu:\\`/tmp/shadow/.+\\.[ch]pp\\'" ;; 本机
+           "/ssh:the-remote-machine:\\`/tmp/shadow/.+\\.[ch]pp\\'"))))
+```
+
+如上这个例子可能更符合日常用途，它默认将本机上的 `/tmp/shadow/` 下的 hpp/cpp 文件与远端机器同步。这里需要注意，如果远端没有目录则需要自己提前创建一个不然会同步失败。
+
+![shadowfile-sync-from-local-to-remote-using-regexp](https://emacs-china.org/uploads/default/original/3X/9/e/9ed404e5d0b17bda27591072a1ea7339b1e1a61c.png)
+
+其实 shadow 有提供命令来构建规则
+
+- `shadow-define-literal-group`
+- `shadow-define-regexp-group`
+
+在使用命令的时候需要注意， shadow 里的 `SITE` 是一个 `/ssh:the-remote-machine:` 这种形式的字符串，如果想指代本机的话用 `shadow-system-name` 的值就行了。
