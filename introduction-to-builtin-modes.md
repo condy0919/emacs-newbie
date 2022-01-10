@@ -1003,10 +1003,9 @@ int foo(int x) {
 
 功能与`org-mode`几乎一致，不过它可以随时`timeclock-out`不用管记录时间的文件打开与否，而在`org-mode`中`clock-out`则要保证运行`clock`的那个文件还处于打开状态。
 
-## elide-head
+## elide-head-mode
 
-依旧是怀旧向的内置包，可以将源代码文件的头部中大量的`license`说明折叠起来，效果
-跟`hideshow`包类似。可以通过配置`elide-head-headers-to-hide`来自定义想要的折叠区间。
+依旧是怀旧向的内置包，可以将源代码文件头部中大量的`license`说明折叠起来，效果跟`hideshow`包类似。可以通过配置`elide-head-headers-to-hide`来自定义想要的折叠区间。最近在 Emacs 29 中引入了 `elide-head-mode` minor mode, 这样就不必再手工调用 `elide-head` 和 `elide-head-show` 了。这两个函数已经被标记为 obsoleted 了。
 
 ## midnight 深夜模式
 
