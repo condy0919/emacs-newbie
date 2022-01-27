@@ -33,9 +33,9 @@
 
 `minibuffer`是`Emacs`命令读取参数的地方，如`C-x C-f` (`find-file`) 会打开一个文件选项列表供选择，`C-x * q` (`calc` quick mode) 可以打开一个计算器，让用户输入算术表达式计算。
 
-![quick calc](https://emacs-china.org/uploads/default/original/2X/7/745229f4121743ffd1e918bd1fc8e2ec435cda93.png)
+![quick calc](images/745229f4121743ffd1e918bd1fc8e2ec435cda93.png)
 
-![quick calc result](https://emacs-china.org/uploads/default/original/2X/c/c9caf7249090c7fefe294075840f27fc9e028a31.png)
+![quick calc result](images/c9caf7249090c7fefe294075840f27fc9e028a31.png)
 
 ## ivy minibuffer 按键绑定
 
@@ -59,7 +59,7 @@
 
 `ivy-height`同它名字显示一样，是指`ivy` `minibuffer`展开的高度，默认值为**9** + **1**。**1** 行当前输入，**9**行其他选项。
 
-![ivy-height](https://emacs-china.org/uploads/default/original/2X/1/17e321a2a227dfe25f62ea591c19d61c2c18d7b3.png)
+![ivy-height](images/17e321a2a227dfe25f62ea591c19d61c2c18d7b3.png)
 
 ## ivy action
 
@@ -80,25 +80,25 @@
 
 在`find-file`的场景下，例如当前光标停在`auto-save-list`选项上
 
-![before-ivy-alt-done](https://emacs-china.org/uploads/default/original/2X/4/4901781dc6e193c5e21e843c28b6ce27940b48bf.png)
+![before-ivy-alt-done](images/4901781dc6e193c5e21e843c28b6ce27940b48bf.png)
 
 然后触发`ivy-alt-done`就会将当前的目录路径补全。
 
-![after-ivy-alt-done](https://emacs-china.org/uploads/default/original/2X/e/e6fa512938b056610d0e5efc99b42509b4c1c34a.png)
+![after-ivy-alt-done](images/e6fa512938b056610d0e5efc99b42509b4c1c34a.png)
 
 如果接下来的补全选项是要打开的文件，那么再触发`ivy-alt-done`实际的效果跟手工按
 `RET`没区别，都会执行打开操作。
 
-![ivy-alt-done-open-file](https://emacs-china.org/uploads/default/original/2X/1/1967b263b44eaf6370bbf1b504d5d498e810c567.png)
+![ivy-alt-done-open-file](images/1967b263b44eaf6370bbf1b504d5d498e810c567.png)
 
 如果当前补全选项是`.`或者`..`目录，那么再次触发`ivy-alt-done`实际也跟手工按
 `RET`没区别，虽然执行的是`dired`。
 
-![ivy-alt-done-open-dir](https://emacs-china.org/uploads/default/original/2X/b/b5c5134e24484d982b371191cf4436362b817c17.png)
+![ivy-alt-done-open-dir](images/b5c5134e24484d982b371191cf4436362b817c17.png)
 
 这里还有一个比较简便方法。如果当前路径确定是目录，可以通过直接按`/`来补全目录路径。
 
-![ivy-alt-done-alternative](https://emacs-china.org/uploads/default/original/2X/3/300fd4b6a601031c314a78a38f2dfce0982cf524.png)
+![ivy-alt-done-alternative](images/300fd4b6a601031c314a78a38f2dfce0982cf524.png)
 
 在上面这种情况下，直接按`/`与`ivy-alt-done`效果一致。
 
@@ -110,11 +110,11 @@
 
 如图所示, 当前最长的公共前缀应该是`evil-for`
 
-![before-ivy-partial-or-done](https://emacs-china.org/uploads/default/original/2X/a/a6f174888c1764e9c4c67ef7cc25f4754d252f24.png)
+![before-ivy-partial-or-done](images/a6f174888c1764e9c4c67ef7cc25f4754d252f24.png)
 
 这里触发`ivy-partial-or-done`之后，可以看到当前输入已补全变成了`evil-for`了
 
-![after-ivy-partial-or-done](https://emacs-china.org/uploads/default/original/2X/2/2f5b28c4d3fc5a04312bcfac97c2189944213b34.png)
+![after-ivy-partial-or-done](images/2f5b28c4d3fc5a04312bcfac97c2189944213b34.png)
 
 `TAB TAB`的效果与`ivy-alt-done`效果一致，不再赘述。
 
@@ -128,12 +128,12 @@
 `ivy-immediate-done`来告诉`ivy`使用当前的输入`abc`作为结果而不是`minibuffer`里的
 候选项。
 
-![new-file](https://emacs-china.org/uploads/default/original/2X/a/ad71d2d4d7123cbd309624f79f0bf100a2135eba.png)
+![new-file](images/ad71d2d4d7123cbd309624f79f0bf100a2135eba.png)
 
 如果是为了解决上述的`find-file`问题，也可以通过设置`ivy-use-selectable-prompt`为
 `t`来曲线救国。
 
-![another-way](https://emacs-china.org/uploads/default/original/2X/8/84519d5f540488c020f7a3d1e407ea595f7e081c.png)
+![another-way](images/84519d5f540488c020f7a3d1e407ea595f7e081c.png)
 
 注意，这里的光标已经上移至用户输入口了。此时直接`RET`确定就可以打开`abc`文件了。
 
@@ -145,7 +145,7 @@
 
 当`ivy-height`设置得比较大时，通过`avy`来直接跳转选择结果会是一个比较快速的办法。
 
-![ivy-avy](https://emacs-china.org/uploads/default/original/2X/f/f2ad674d5a2b7b607b17a0d53fed0b313cf20f36.png)
+![ivy-avy](images/f2ad674d5a2b7b607b17a0d53fed0b313cf20f36.png)
 
 ### ivy-dispatching-done
 
@@ -160,19 +160,19 @@
 - `d` 查看定义
 - `h` 帮助
 
-![M-x evil-forward-char](https://emacs-china.org/uploads/default/original/2X/d/d0eaa05fa71b217fe3d654db59286034f80e1620.png)
+![M-x evil-forward-char](images/d0eaa05fa71b217fe3d654db59286034f80e1620.png)
 
 这里`M-x`想执行`evil-forward-char`这个命令，但是我想知道这个命令是如何实现的。那
 么接下来就通过按`M-o`触发`ivy-dispatching-done`，之后再输入`d`执行查看这个函数的
 定义。
 
-![ivy-dispatching-done definition](https://emacs-china.org/uploads/default/optimized/2X/1/1a67e0225bdc217f28ed280f014ad6cfbe9fba05_2_453x500.png)
+![ivy-dispatching-done definition](images/1a67e0225bdc217f28ed280f014ad6cfbe9fba05.png)
 
 可以看到，它已经确定跳转至`evil-forward-char`这个命令处了。
 
 而`h`所对应的帮助`action`实际就是`describe-function`的效果。
 
-![ivy-dispatching-done help](https://emacs-china.org/uploads/default/optimized/2X/f/f0dd0c5034e01f493e83f38238a74c848468306f_2_690x310.png)
+![ivy-dispatching-done help](images/f0dd0c5034e01f493e83f38238a74c848468306f.png)
 
 ### ivy-call
 
@@ -180,11 +180,11 @@
 
 还是以`evil-forward-char`举例
 
-![before-ivy-call](https://emacs-china.org/uploads/default/original/2X/2/2cc99391cd9c67ff5bb4b61693c795cc4b1f4cd3.png)
+![before-ivy-call](images/2cc99391cd9c67ff5bb4b61693c795cc4b1f4cd3.png)
 
 初始光标停留在行首，然后连续3次`C-M-m`触发`ivy-call`可以得到如下结果。
 
-![after-ivy-call](https://emacs-china.org/uploads/default/original/2X/0/0a7c294f8fb5a9605c3bd5338f39a4a5043b2016.png)
+![after-ivy-call](images/0a7c294f8fb5a9605c3bd5338f39a4a5043b2016.png)
 
 这时，光标已经向前移动了3个字符，且`minibuffer`还处于打开的状态，颇有`hydra`的味道。
 
@@ -195,7 +195,7 @@
 `M-x`输入`evil-forward-char`之后，`C-M-o` `d` `C-M-o` `h`可以分别打开函数定义处、
 函数帮助页面。
 
-![ivy-dispatching-call](https://emacs-china.org/uploads/default/optimized/2X/d/d00ba008897db831e5fd0f670bd468657af21104_2_454x500.png)
+![ivy-dispatching-call](images/d00ba008897db831e5fd0f670bd468657af21104.png)
 
 ### ivy-next-line-and-call 和 ivy-previous-line-and-call
 
@@ -203,11 +203,11 @@
 
 一个比较有用的场景是，`find-file`找到了许多相似的文件，需要一次性都把他们打开。这个时候，`ivy-next-line-and-call`的用处就来了。
 
-![before-ivy-next-line-and-call](https://emacs-china.org/uploads/default/original/2X/b/bcc57fb9d67c044a4dc9f21b80e5607c9d51eb3c.png)
+![before-ivy-next-line-and-call](images/bcc57fb9d67c044a4dc9f21b80e5607c9d51eb3c.png)
 
 这里想一次性打开`ace-window`的这3个文件，连续3次使用`C-M-n`就行。
 
-![after-ivy-next-line-and-call](https://emacs-china.org/uploads/default/original/2X/4/47429938faa040a1190e15b797165d93e8d98e39.png)
+![after-ivy-next-line-and-call](images/47429938faa040a1190e15b797165d93e8d98e39.png)
 
 ### ivy-resume
 
@@ -215,7 +215,7 @@
 
 如`M-x`执行`evil-forward-char`，但是不小心按快了，执行了`evil-forward-word-end`. 这时，`ivy-resume`会恢复`M-x`的最后状态，保留着用户输入的内容、光标位置。
 
-![ivy-resume](https://emacs-china.org/uploads/default/original/2X/3/38686f6645e1e906dad62584dbe32028f61076c7.png)
+![ivy-resume](images/38686f6645e1e906dad62584dbe32028f61076c7.png)
 
 ### ivy-next-history-element 和 ivy-previous-history-element
 
@@ -235,7 +235,7 @@
 `ivy-yank-word`会将第1个单词`apple`输入至`minibuffer`中。然后光标会移动至`boy`单
 词前。再次`M-j`即会将`boy`单词输入至`minibuffer`中。
 
-![ivy-yank-word](https://emacs-china.org/uploads/default/original/2X/1/18758fb9b34b1eeca2d6057025bd674143d8b84d.png)
+![ivy-yank-word](images/18758fb9b34b1eeca2d6057025bd674143d8b84d.png)
 
 ### ivy-restrict-to-matches
 
@@ -243,13 +243,13 @@
 它会清空用户输入、将搜索集合设置为当前的候选集合，这样用户可以慢慢地减少干扰项，
 缩小查找范围。
 
-![before-ivy-restrict-to-matches](https://emacs-china.org/uploads/default/original/2X/5/5f79a297aa9b32e7a0978d4fa91dbd24413b1495.png)
+![before-ivy-restrict-to-matches](images/5f79a297aa9b32e7a0978d4fa91dbd24413b1495.png)
 
 默认`M-x`可执行的命令数量为 **6247** 。输入`evil`再`S-SPC`触发
 `ivy-restrict-to-matches`。此时，当前集合大小仅为 **378** 。可见确实起到了二次过滤
 的作用。
 
-![after-ivy-restrict-to-matches](https://emacs-china.org/uploads/default/original/2X/8/8e5ed7e19aa3a084df94d6856f44da4990044323.png)
+![after-ivy-restrict-to-matches](images/8e5ed7e19aa3a084df94d6856f44da4990044323.png)
 
 注：显示候选集合大小通过设置`(setq ivy-count-format "%d/%d")`实现。
 
@@ -324,7 +324,7 @@
 在`ivy-occur-mode`下，`ivy-occur-dispatch`如同`ivy-dispatching-done`一样，将会读
 取一个`action`，然后在当前光标停留的候选项上执行对应的`action`。
 
-![ivy-occur](https://emacs-china.org/uploads/default/optimized/2X/8/802c07403a45544da4b6b3038f1cd555b21a7ac5_2_275x500.png)
+![ivy-occur](images/802c07403a45544da4b6b3038f1cd555b21a7ac5.png)
 
 ## ivy completion style
 
@@ -355,7 +355,7 @@
 要有2个空格).`ivy`会把它转换为`foo .*bar`(注意`foo`后面有个空格)。论坛会压缩空
 格，效果下文见图片。
 
-![ivy--regex-plus](https://emacs-china.org/uploads/default/original/2X/e/e3feb87f5411ea6ab9d3882e188b57159e918216.png)
+![ivy--regex-plus](images/e3feb87f5411ea6ab9d3882e188b57159e918216.png)
 
 此外它还支持正则的取非操作，通过`!`来完成。
 
@@ -407,5 +407,5 @@
     ("x" counsel-find-file-as-root "open as root"))
 ```
 
-![custom-action](https://emacs-china.org/uploads/default/original/2X/2/2b93e615847880b512bf2fc0ee7d56f8d5fc1046.png)
+![custom-action](images/2b93e615847880b512bf2fc0ee7d56f8d5fc1046.png)
 
